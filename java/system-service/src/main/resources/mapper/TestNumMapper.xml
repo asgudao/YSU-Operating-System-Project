@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tjetc.dao.TestNumMapper">
+    <sql id="columnName">
+        id,
+        pId,
+        pageNum,
+        useTLB,
+        visitMemory,
+        visitTLB,
+        handleLosepage,
+        visitNum,
+        visitBegin,
+        visitEnd,
+        inputNum,
+        outputNum
+    </sql>
+    <resultMap id="baseMap" type="testNum">
+        <result column=" id" property="id"></result>
+        <result column=" page_num" property="pageNum"></result>
+        <result column=" use_TLB" property="useTLB"></result>
+        <result column=" TLB_num" property="TLBNum"></result>
+        <result column=" visit_memory" property="visitMemory"></result>
+        <result column=" visit_TLB" property="visitTLB"></result>
+        <result column=" handle_losepage" property="handleLosepage"></result>
+        <result column=" visit_num" property="visitNum"></result>
+        <result column=" visit_begin" property="visitBegin"></result>
+        <result column=" visit_end" property="visitEnd"></result>
+        <result column="input_num" property="inputNum"></result>
+        <result column="output_num" property="outputNum"></result>
+    </resultMap>
+    <select id="selectById" resultMap="baseMap">
+        select <include refid="columnMap"></include>
+        from test_num
+        where id=#{id}
+    </select>
+
+</mapper>

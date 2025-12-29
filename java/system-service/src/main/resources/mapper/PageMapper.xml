@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tjetc.dao.PageMapper">
+    <sql id="columnName">
+        id,
+        tId,
+        FIFO_time,
+        FIFO_losepage,
+        LRU_time,
+        LRU_losepage,
+        LFU_time,
+        LFU_losepage,
+        OPT_time,
+        OPT_losepage
+    </sql>
+    <resultMap id="baseMap" type="page">
+        <id column="id" property="id"></id>
+        <result column=" t_id" property="tId"></result>
+        <result column="FIFO_time" property="FIFOTime"></result>
+        <result column="FIFO_losepage" property="FIFOLosepage"></result>
+        <result column="LRU_time" property="LRUTime"></result>
+        <result column="LRU_losepage" property="LRULosepage"></result>
+        <result column="LFU_time" property="LFUTime"></result>
+        <result column="LFU_losepage" property="LFULosepage"></result>
+        <result column="OPT_time" property="OPTTime"></result>
+        <result column="OPT_losepage" property="OPTLosepage"></result>
+    </resultMap>
+    <select id="selectAll" resultMap="baseMap">
+        select <include refid="columnName"></include>
+        from page
+    </select>
+    <select id="selectById" resultMap="baseMap">
+        select <include refid="columnName"></include>
+        from page
+        where id=#{id}
+    </select>
+</mapper>
