@@ -22,5 +22,4 @@ public class TestNum {
     private Integer visitBegin;
     private Integer visitEnd;
     private String inputNum;
-    private String outputNum;
 }

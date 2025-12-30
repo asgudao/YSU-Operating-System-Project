@@ -23,6 +23,6 @@ public class Page {
     private Integer FIFOTime;
     private Integer LRUTime;
     private Integer LFUTime;
-    private Integer OPTime;
+    private Integer OPTTime;
 
 }

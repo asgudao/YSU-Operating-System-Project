@@ -11,8 +11,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.sql.Struct;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 @Service
 @Slf4j
@@ -22,27 +24,26 @@ public class PageSystemImpl implements PageSystemService {
     @Autowired
     private TestNumMapper testNumMapper;
 
-    private ConcurrentHashMap<String, String> All = new ConcurrentHashMap<>();
-    private ConcurrentHashMap<String, String> FIFO_TLB = new ConcurrentHashMap<>();
-    private ConcurrentHashMap<String, String> FIFO_PageTable = new ConcurrentHashMap<>();
+
+    private List<String> FIFO_TLB = new ArrayList<>();
+    private List<String> FIFO_PageTable = new ArrayList<>();
     private Integer FIFO_Time=0;
     private Integer FIFO_Losepage=0;
-    private ConcurrentHashMap<String, String> LRU_TLB = new ConcurrentHashMap<>();
-    private ConcurrentHashMap<String, String> LRU_PageTable = new ConcurrentHashMap<>();
+    private List<String> LRU_TLB = new ArrayList<>();
+    private List<String> LRU_PageTable = new ArrayList<>();
     private Integer LRU_Time=0;
     private Integer LRU_Losepage=0;
-    private ConcurrentHashMap<String, String> LFU_TLB = new ConcurrentHashMap<>();
-    private ConcurrentHashMap<String, String> LFU_PageTable = new ConcurrentHashMap<>();
+    private List<String> LFU_TLB = new ArrayList<>();
+    private List<String> LFU_PageTable = new ArrayList<>();
     private Integer LFU_Time=0;
     private Integer LFU_Losepage=0;
-    private ConcurrentHashMap<String, String> OPT_TLB = new ConcurrentHashMap<>();
-    private ConcurrentHashMap<String, String> OPT_PageTable = new ConcurrentHashMap<>();
+    private List<String> OPT_TLB = new ArrayList<>();
+    private List<String> OPT_PageTable = new ArrayList<>();
     private Integer OPT_Time=0;
     private Integer OPT_Losepage=0;
     private TestNum testNum = new TestNum();
     private Page page=new Page();
     List<String> input_num=new ArrayList<>();
-    List<String> output_num=new ArrayList<>();
     @Autowired
     private TestNumService testNumService;
     @Autowired
@@ -52,7 +53,7 @@ public class PageSystemImpl implements PageSystemService {
     @Override
     public JsonResult start(TestNum testNum){
         this.testNum = testNum;
-        inputProcess(testNum.getInputNum());
+        inputProcess(testNum.getInputNum());//设置testNum的input_num属性
         FIFO();
         LRU();
         LFU();
@@ -61,38 +62,12 @@ public class PageSystemImpl implements PageSystemService {
         testNumService.add(testNum);
     }
 
-    //设置了testNum的OutputNum属性，给All哈希表赋值,设置了input_num和output_num的值
+    //设置了testNum的input_num属性
     @Override
     public JsonResult inputProcess(String input){
-        if(input==null||input.isBlank()){
-            return JsonResult.fail("输入为空");
-        }
         List<String> processInput = Arrays.asList(input.trim().split("[,;\\s，。‘’'\"“”、]+"));
-        String output_str="";
         for (String str : processInput) {
-            // 跳过空字符串（避免处理分割后可能出现的空元素）
-            if (str.isEmpty()) {
-                continue;
-            }
-            // 处理：最高位（第一个字符）移到最低位（末尾）
-            if (str.length() == 1) {
-                // 若字符串长度为1，移动后不变
-                this.input_num.add(str);
-                this.output_num.add(str);
-                this.All.put(str,str);
-                output_str += str+',';
-            } else {
-                // 截取第一个字符后的子串 + 第一个字符
-                this.input_num.add(str);
-                String processed = str.substring(1) + str.charAt(0);
-                this.output_num.add(processed);
-                this.All.put(str,processed);
-                output_str += processed+',';
-            }
-            if (output_str.endsWith(",")) {
-                output_str = output_str.substring(0, output_str.length()-1);
-            }
-            this.testNum.setOutputNum(output_str);
+            this.input_num.add(str);
         }
         return JsonResult.success("输入转化成功");
     }
@@ -102,37 +77,41 @@ public class PageSystemImpl implements PageSystemService {
         Queue <String>queue_page = new LinkedList<>();
         if(testNum.getUseTLB()==0){//没有快表
             for(int i=0;i<input_num.size();i++){
-                if(FIFO_PageTable.get(input_num.get(i))==null){//页表未查询到，产生缺页中断
-                    i--;//让下次接着查询此值
+                if(!FIFO_PageTable.contains(input_num.get(i))){//页表未查询到，产生缺页中断
+                    FIFO_Time+=testNum.getVisitMemory();//加页表查询时间
                     if(FIFO_PageTable.size()==testNum.getPageNum()){//页表满了
                         FIFO_PageTable.remove(queue_page.peek());//去掉页表中最先进入的值
                         queue_page.poll();//去掉队列中最先进入的值
                     }
                     queue_page.offer(input_num.get(i));//加入一个新值
-                    FIFO_PageTable.put(input_num.get(i), All.get(input_num.get(i)));//给页表中加入此数据
-                    FIFO_Time += testNum.getHandleLosepage();//加处理缺页中断的情况
+                    FIFO_PageTable.add(input_num.get(i));//给页表中加入此数据
+                    FIFO_Time += testNum.getHandleLosepage();//加处理缺页中断情况的时间
                     FIFO_Losepage++;//加出现缺页中断情况的次数
+                    i--;//让下次接着查询此值
                 }
                 else{
                     FIFO_Time+=testNum.getVisitMemory();//正常查询页表
                 }
+                FIFO_Time+=testNum.getVisitMemory();//获取数据查询页表
             }
         }
         else if (testNum.getUseTLB()==1){
             for(int i=0;i<input_num.size();i++){
-                if(FIFO_TLB.get(input_num.get(i))==null){//tlb未查询到
-                    if(FIFO_PageTable.get(input_num.get(i))==null){//页表未查询到，产生缺页中断
-                        i--;//让下次接着查询
+                if(!FIFO_TLB.contains(input_num.get(i))){//tlb未查询到
+                    FIFO_Time+=testNum.getVisitTLB();
+                    if(!FIFO_PageTable.contains(input_num.get(i))){//页表未查询到，产生缺页中断
+                        FIFO_Time+=testNum.getVisitMemory();//查询页表时间
                         if(FIFO_PageTable.size()==testNum.getPageNum()){//页表满了
                             FIFO_PageTable.remove(queue_page.peek());//去掉页表中最先进入的那个值
                             FIFO_TLB.remove(queue_page.peek());//去掉快表中最先进入的那个值
                             queue_page.poll();//去掉最先进入的值
                         }
-                        queue_page.offer(input_num.get(i));
-                        FIFO_TLB.put(input_num.get(i),All.get(input_num.get(i)));//给快表中加入此数据
-                        FIFO_PageTable.put(input_num.get(i), All.get(input_num.get(i)));//给页表中加入此数据
+                        queue_page.offer(input_num.get(i));//给队列中加入数据
+                        FIFO_TLB.add(input_num.get(i));//给快表中加入此数据
+                        FIFO_PageTable.add(input_num.get(i));//给页表中加入此数据
                         FIFO_Time += testNum.getHandleLosepage();//加处理缺页中断的情况
                         FIFO_Losepage++;//加出现缺页中断情况的次数
+                        i--;//让下次接着查询
                     }
                     else{
                         FIFO_Time+=testNum.getVisitMemory();
@@ -141,6 +120,7 @@ public class PageSystemImpl implements PageSystemService {
                 else{//tlb查询到
                     FIFO_Time+=testNum.getVisitTLB();
                 }
+                FIFO_Time+=testNum.getVisitMemory();
             }
         }
         page.setFIFOTime(FIFO_Time);
@@ -150,43 +130,55 @@ public class PageSystemImpl implements PageSystemService {
 
 
     public JsonResult LRU(){
+        List <String> list_page = new ArrayList<>();
         if(testNum.getUseTLB()==0){//没有快表
             for(int i=0;i<input_num.size();i++){
-                if(LRU_PageTable.get(input_num.get(i))==null){//页表未查询到，产生缺页中断
-                    i--;//让下次接着查询此值
+                if(!LRU_PageTable.contains(input_num.get(i))){//页表未查询到，产生缺页中断
+                    LRU_Time+=testNum.getVisitMemory();
                     if(LRU_PageTable.size()==testNum.getPageNum()){//页表满了
-                        LRU_PageTable.remove(input_num.get(i-3));//去掉页表中最久未使用的值
+                        LRU_PageTable.remove(list_page.get(0));//去掉页表中最久未使用的值
+                        list_page.remove(0);//去掉最久未使用的值
                     }
-                    LRU_PageTable.put(input_num.get(i), All.get(input_num.get(i)));//给页表中加入此数据
+                    list_page.add(input_num.get(i));//加入一个新值
+                    LRU_PageTable.add(input_num.get(i));//给页表中加入此数据
                     LRU_Time += testNum.getHandleLosepage();//加处理缺页中断的情况
                     LRU_Losepage++;//加出现缺页中断情况的次数
+                    i--;//让下次接着查询此值
                 }
                 else{
+                    list_page.remove(input_num.get(i));
+                    list_page.add(input_num.get(i));//新访问过，调整顺序
                     LRU_Time+=testNum.getVisitMemory();//正常查询页表
                 }
+                LRU_Time+=testNum.getVisitMemory();
             }
         }
         else if (testNum.getUseTLB()==1){
             for(int i=0;i<input_num.size();i++){
-                if(LRU_TLB.get(input_num.get(i))==null){//tlb未查询到
-                    if(LRU_PageTable.get(input_num.get(i))==null){//页表未查询到，产生缺页中断
-                        i--;//让下次接着查询
+                if(!LRU_TLB.contains(input_num.get(i))){//tlb未查询到
+                    if(!LRU_PageTable.contains(input_num.get(i))){//页表未查询到，产生缺页中断
                         if(LRU_PageTable.size()==testNum.getPageNum()){//页表满了
-                            LRU_PageTable.remove(input_num.get(i-3));//去掉页表中最久未使用的那个值
-                            LRU_TLB.remove(input_num.get(i-3));//去掉快表中最久未使用的那个值
+                            LRU_PageTable.remove(list_page.get(0));//去掉页表中最久未使用的那个值
+                            LRU_TLB.remove(list_page.get(0));//去掉快表中最久未使用的那个值
+                            list_page.remove(0);//去掉最久未使用的值
                         }
-                        LRU_TLB.put(input_num.get(i),All.get(input_num.get(i)));//给快表中加入此数据
-                        LRU_PageTable.put(input_num.get(i), All.get(input_num.get(i)));//给页表中加入此数据
+                        list_page.add(input_num.get(i));//加入一个新值
+                        LRU_TLB.add(input_num.get(i));//给快表中加入此数据
+                        LRU_PageTable.add(input_num.get(i));//给页表中加入此数据
                         LRU_Time += testNum.getHandleLosepage();//加处理缺页中断的情况
                         LRU_Losepage++;//加出现缺页中断情况的次数
+                        i--;//让下次接着查询
                     }
                     else{
+                        list_page.remove(input_num.get(i));
+                        list_page.add(input_num.get(i));
                         LRU_Time+=testNum.getVisitMemory();
                     }
                 }
                 else{//tlb查询到
                     LRU_Time+=testNum.getVisitTLB();
                 }
+                LRU_Time+=testNum.getVisitMemory();
             }
         }
         page.setLRUTime(LRU_Time);
@@ -195,14 +187,117 @@ public class PageSystemImpl implements PageSystemService {
     }
 
 
-
     public JsonResult LFU(){
-        
-
+        Map <String,Integer> list_page = new LinkedHashMap<>();
+        if(testNum.getUseTLB()==0){//没有快表
+            for(int i=0;i<input_num.size();i++){
+                if(!LFU_PageTable.contains(input_num.get(i))){//页表未查询到，产生缺页中断
+                    LFU_Time+=testNum.getVisitMemory();
+                    if(LFU_PageTable.size()==testNum.getPageNum()){//页表满了
+                        LFU_PageTable.remove(list_page.keySet().iterator().next());//去掉页表中最久未使用的值
+                        list_page.remove(list_page.keySet().iterator().next());//去掉最久未使用的值
+                    }
+                    list_page.put(input_num.get(i),1);//加入一个新值
+                    LFU_PageTable.add(input_num.get(i));//给页表中加入此数据
+                    LFU_Time += testNum.getHandleLosepage();//加处理缺页中断的情况
+                    LFU_Losepage++;//加出现缺页中断情况的次数
+                    i--;//让下次接着查询此值
+                }
+                else{
+                    list_page.merge(input_num.get(i),1,Integer::sum);
+                    LFU_Time+=testNum.getVisitMemory();//正常查询页表
+                }
+                LFU_Time+=testNum.getVisitMemory();
+            }
+        }
+        else if (testNum.getUseTLB()==1){
+            for(int i=0;i<input_num.size();i++){
+                if(!LFU_TLB.contains(input_num.get(i))){//tlb未查询到
+                    if(!LFU_PageTable.contains(input_num.get(i))){//页表未查询到，产生缺页中断
+                        if(LFU_PageTable.size()==testNum.getPageNum()){//页表满了
+                            LFU_PageTable.remove(list_page.keySet().iterator().next());//去掉页表中最久未使用的那个值
+                            LFU_TLB.remove(list_page.keySet().iterator().next());//去掉快表中最久未使用的那个值
+                            list_page.remove(0);//去掉最久未使用的值
+                        }
+                        list_page.put(input_num.get(i),1);//加入一个新值
+                        LFU_TLB.add(input_num.get(i));//给快表中加入此数据
+                        LFU_PageTable.add(input_num.get(i));//给页表中加入此数据
+                        LFU_Time += testNum.getHandleLosepage();//加处理缺页中断的情况
+                        LFU_Losepage++;//加出现缺页中断情况的次数
+                        i--;//让下次接着查询
+                    }
+                    else{
+                        list_page.merge(input_num.get(i),1,Integer::sum);
+                        LFU_Time+=testNum.getVisitMemory();
+                    }
+                }
+                else{//tlb查询到
+                    LFU_Time+=testNum.getVisitTLB();
+                }
+                LFU_Time+=testNum.getVisitMemory();
+            }
+        }
+        page.setLFUTime(LFU_Time);
+        page.setLFULosepage(LFU_Losepage);
+        return JsonResult.success("LFU成功运行");
     }
 
 
     public JsonResult OPT(){
+        List <String> list_page = new ArrayList<>();
+        if(testNum.getUseTLB()==0){//没有快表
+            for(int i=0;i<input_num.size();i++){
+                if(!OPT_PageTable.contains(input_num.get(i))){//页表未查询到，产生缺页中断
+                    OPT_Time+=testNum.getVisitMemory();
+                    if(OPT_PageTable.size()==testNum.getPageNum()){//页表满了
+                        OPT_PageTable.remove(list_page.get(0));//去掉页表中最久未使用的值
+                        list_page.remove(0);//去掉最久未使用的值
+                    }
+                    list_page.add(input_num.get(i));//加入一个新值
+                    OPT_PageTable.add(input_num.get(i));//给页表中加入此数据
+                    OPT_Time += testNum.getHandleLosepage();//加处理缺页中断的情况
+                    OPT_Losepage++;//加出现缺页中断情况的次数
+                    i--;//让下次接着查询此值
+                }
+                else{
+                    list_page.remove(input_num.get(i));
+                    list_page.add(input_num.get(i));//新访问过，调整顺序
+                    OPT_Time+=testNum.getVisitMemory();//正常查询页表
+                }
+                OPT_Time+=testNum.getVisitMemory();
+            }
+        }
+        else if (testNum.getUseTLB()==1){
+            for(int i=0;i<input_num.size();i++){
+                if(!OPT_TLB.contains(input_num.get(i))){//tlb未查询到
+                    if(!OPT_PageTable.contains(input_num.get(i))){//页表未查询到，产生缺页中断
+                        if(OPT_PageTable.size()==testNum.getPageNum()){//页表满了
+                            OPT_PageTable.remove(list_page.get(0));//去掉页表中最久未使用的那个值
+                            OPT_TLB.remove(list_page.get(0));//去掉快表中最久未使用的那个值
+                            list_page.remove(0);//去掉最久未使用的值
+                        }
+                        list_page.add(input_num.get(i));//加入一个新值
+                        OPT_TLB.add(input_num.get(i));//给快表中加入此数据
+                        OPT_PageTable.add(input_num.get(i));//给页表中加入此数据
+                        OPT_Time += testNum.getHandleLosepage();//加处理缺页中断的情况
+                        OPT_Losepage++;//加出现缺页中断情况的次数
+                        i--;//让下次接着查询
+                    }
+                    else{
+                        list_page.remove(input_num.get(i));
+                        list_page.add(input_num.get(i));
+                        OPT_Time+=testNum.getVisitMemory();
+                    }
+                }
+                else{//tlb查询到
+                    OPT_Time+=testNum.getVisitTLB();
+                }
+                OPT_Time+=testNum.getVisitMemory();
+            }
+        }
+        page.setOPTTime(OPT_Time);
+        page.setOPTLosepage(OPT_Losepage);
+        return JsonResult.success("OPT成功运行");
 
     }
 

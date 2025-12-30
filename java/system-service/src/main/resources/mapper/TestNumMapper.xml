@@ -15,7 +15,6 @@
         visitBegin,
         visitEnd,
         inputNum,
-        outputNum
     </sql>
     <resultMap id="baseMap" type="testNum">
         <result column=" id" property="id"></result>
@@ -29,7 +28,6 @@
         <result column=" visit_begin" property="visitBegin"></result>
         <result column=" visit_end" property="visitEnd"></result>
         <result column="input_num" property="inputNum"></result>
-        <result column="output_num" property="outputNum"></result>
     </resultMap>
     <select id="selectById" resultMap="baseMap">
         select <include refid="columnMap"></include>
