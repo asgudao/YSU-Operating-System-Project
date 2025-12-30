@@ -1,9 +1,12 @@
 package com.tjetc.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
 
 
 @Data
@@ -18,8 +21,9 @@ public class TestNum {
     private Integer visitMemory;
     private Integer visitTLB;
     private Integer handleLosepage;
-    private Integer visitNum;
-    private Integer visitBegin;
-    private Integer visitEnd;
     private String inputNum;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime createTime;
+
 }

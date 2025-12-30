@@ -11,6 +11,12 @@ public interface TestNumService {
      */
     JsonResult add(TestNum testNum);
 
+    /**
+     * 查询所有数据
+     *
+     * @return
+     */
+    JsonResult<TestNum> findAll();
 
     /**
      * 根据id查询用户信息

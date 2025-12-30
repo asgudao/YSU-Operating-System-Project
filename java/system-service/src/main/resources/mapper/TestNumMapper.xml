@@ -5,16 +5,14 @@
 <mapper namespace="com.tjetc.dao.TestNumMapper">
     <sql id="columnName">
         id,
-        pId,
-        pageNum,
-        useTLB,
-        visitMemory,
-        visitTLB,
-        handleLosepage,
-        visitNum,
-        visitBegin,
-        visitEnd,
-        inputNum,
+        p_id,
+        page_num,
+        use_TLB,
+        visit_memory,
+        visit_TLB,
+        handle_losepage,
+        input_num,
+        create_time
     </sql>
     <resultMap id="baseMap" type="testNum">
         <result column=" id" property="id"></result>
@@ -24,10 +22,8 @@
         <result column=" visit_memory" property="visitMemory"></result>
         <result column=" visit_TLB" property="visitTLB"></result>
         <result column=" handle_losepage" property="handleLosepage"></result>
-        <result column=" visit_num" property="visitNum"></result>
-        <result column=" visit_begin" property="visitBegin"></result>
-        <result column=" visit_end" property="visitEnd"></result>
         <result column="input_num" property="inputNum"></result>
+        <result column="create_time" property="createTime"></result>
     </resultMap>
     <select id="selectById" resultMap="baseMap">
         select <include refid="columnMap"></include>

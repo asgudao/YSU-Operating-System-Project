@@ -7,10 +7,7 @@ import com.tjetc.entity.TestNum;
 import com.tjetc.service.PageService;
 import com.tjetc.service.TestNumService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 public class UseController {
@@ -18,16 +15,6 @@ public class UseController {
     private PageService pageService;
     @Autowired
     private TestNumService testNumService;
-
-    @RequestMapping("page/add")
-    public JsonResult add(Page page){
-        return pageService.add(page);
-    }
-
-    @RequestMapping("testNum/add")
-    public JsonResult add(TestNum testNum){
-        return testNumService.add(testNum);
-    }
 
     @RequestMapping("page/delete/{id}")
     public JsonResult delete(@PathVariable("id") Integer id){

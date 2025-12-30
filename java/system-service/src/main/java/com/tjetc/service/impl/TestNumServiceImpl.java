@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @Slf4j
 public class TestNumServiceImpl implements TestNumService {
@@ -36,5 +38,11 @@ public class TestNumServiceImpl implements TestNumService {
             return JsonResult.fail("此数据不存在");
         }
         return JsonResult.success(testNum);
+    }
+
+    @Override
+    public JsonResult<TestNum> findAll(){
+        List<TestNum> testNumList=testNumMapper.selectAll();
+        return JsonResult.success(testNumList);
     }
 }

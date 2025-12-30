@@ -10,11 +10,7 @@ import com.tjetc.service.TestNumService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.sql.Struct;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 @Service
 @Slf4j
@@ -23,8 +19,12 @@ public class PageSystemImpl implements PageSystemService {
     private PageSystemService pageSystemService;
     @Autowired
     private TestNumMapper testNumMapper;
+    @Autowired
+    private TestNumService testNumService;
+    @Autowired
+    private PageService pageService;
 
-
+    //变量定义
     private List<String> FIFO_TLB = new ArrayList<>();
     private List<String> FIFO_PageTable = new ArrayList<>();
     private Integer FIFO_Time=0;
@@ -44,16 +44,21 @@ public class PageSystemImpl implements PageSystemService {
     private TestNum testNum = new TestNum();
     private Page page=new Page();
     List<String> input_num=new ArrayList<>();
-    @Autowired
-    private TestNumService testNumService;
-    @Autowired
-    private PageService pageService;
+    private String[][] FIFO_TableChange;
+    private String[][] LFU_TableChange;
+    private String[][] LRU_TableChange;
+//    private String[][] OPT_TableChange;
 
 
+    //主函数
     @Override
     public JsonResult start(TestNum testNum){
         this.testNum = testNum;
         inputProcess(testNum.getInputNum());//设置testNum的input_num属性
+        FIFO_TableChange=new String[testNum.getPageNum()][input_num.size()];
+        LFU_TableChange=new String[testNum.getPageNum()][input_num.size()];
+        LRU_TableChange=new String[testNum.getPageNum()][input_num.size()];
+//        OPT_TableChange=new String[testNum.getPageNum()][input_num.size()];
         FIFO();
         LRU();
         LFU();
@@ -63,7 +68,8 @@ public class PageSystemImpl implements PageSystemService {
         return JsonResult.success("");
     }
 
-    //设置了testNum的input_num属性
+
+    //输入处理,设置了input_num属性
     @Override
     public JsonResult inputProcess(String input){
         List<String> processInput = Arrays.asList(input.trim().split("[,;\\s，。‘’'\"“”、]+"));
@@ -73,18 +79,35 @@ public class PageSystemImpl implements PageSystemService {
         return JsonResult.success("输入转化成功");
     }
 
+    //用于给tablechange赋值
+    public JsonResult record(String[][] TableChange,List<String> list,Integer i){
+        for(int j = 0;j<input_num.size();j++){//行
+            TableChange[i][j]=list.get(j);
+        }
+        return JsonResult.success("success");
+    }
+
+    public JsonResult record(String[][] TableChange, Map<String, Integer> list, Integer i) {
+        Iterator<String> it = list.keySet().iterator();
+        for (int j = 0; j < input_num.size(); j++) {
+            if (!it.hasNext()) break;
+            String key = it.next();
+            TableChange[i][j] = key;
+        }
+        return JsonResult.success("success");
+    }
 
     public JsonResult FIFO(){
-        Queue <String>queue_page = new LinkedList<>();
+        List <String>list_page = new ArrayList<>();
         if(testNum.getUseTLB()==0){//没有快表
             for(int i=0;i<input_num.size();i++){
                 if(!FIFO_PageTable.contains(input_num.get(i))){//页表未查询到，产生缺页中断
                     FIFO_Time+=testNum.getVisitMemory();//加页表查询时间
                     if(FIFO_PageTable.size()==testNum.getPageNum()){//页表满了
-                        FIFO_PageTable.remove(queue_page.peek());//去掉页表中最先进入的值
-                        queue_page.poll();//去掉队列中最先进入的值
+                        FIFO_PageTable.remove(list_page.get(0));//去掉页表中最先进入的值
+                        list_page.remove(0);//去掉队列中最先进入的值
                     }
-                    queue_page.offer(input_num.get(i));//加入一个新值
+                    list_page.add(input_num.get(i));//加入一个新值
                     FIFO_PageTable.add(input_num.get(i));//给页表中加入此数据
                     FIFO_Time += testNum.getHandleLosepage();//加处理缺页中断情况的时间
                     FIFO_Losepage++;//加出现缺页中断情况的次数
@@ -93,6 +116,7 @@ public class PageSystemImpl implements PageSystemService {
                 else{
                     FIFO_Time+=testNum.getVisitMemory();//正常查询页表
                 }
+                record(FIFO_TableChange,list_page,i);
                 FIFO_Time+=testNum.getVisitMemory();//获取数据查询页表
             }
         }
@@ -103,11 +127,11 @@ public class PageSystemImpl implements PageSystemService {
                     if(!FIFO_PageTable.contains(input_num.get(i))){//页表未查询到，产生缺页中断
                         FIFO_Time+=testNum.getVisitMemory();//查询页表时间
                         if(FIFO_PageTable.size()==testNum.getPageNum()){//页表满了
-                            FIFO_PageTable.remove(queue_page.peek());//去掉页表中最先进入的那个值
-                            FIFO_TLB.remove(queue_page.peek());//去掉快表中最先进入的那个值
-                            queue_page.poll();//去掉最先进入的值
+                            FIFO_PageTable.remove(list_page.get(0));//去掉页表中最先进入的那个值
+                            FIFO_TLB.remove(list_page.get(0));//去掉快表中最先进入的那个值
+                            list_page.remove(0);//去掉最先进入的值
                         }
-                        queue_page.offer(input_num.get(i));//给队列中加入数据
+                        list_page.add(input_num.get(i));//给队列中加入数据
                         FIFO_TLB.add(input_num.get(i));//给快表中加入此数据
                         FIFO_PageTable.add(input_num.get(i));//给页表中加入此数据
                         FIFO_Time += testNum.getHandleLosepage();//加处理缺页中断的情况
@@ -122,6 +146,7 @@ public class PageSystemImpl implements PageSystemService {
                     FIFO_Time+=testNum.getVisitTLB();
                 }
                 FIFO_Time+=testNum.getVisitMemory();
+                record(FIFO_TableChange,list_page,i);
             }
         }
         page.setFIFOTime(FIFO_Time);
@@ -151,6 +176,7 @@ public class PageSystemImpl implements PageSystemService {
                     list_page.add(input_num.get(i));//新访问过，调整顺序
                     LRU_Time+=testNum.getVisitMemory();//正常查询页表
                 }
+                record(LRU_TableChange,list_page,i);
                 LRU_Time+=testNum.getVisitMemory();
             }
         }
@@ -180,6 +206,7 @@ public class PageSystemImpl implements PageSystemService {
                     LRU_Time+=testNum.getVisitTLB();
                 }
                 LRU_Time+=testNum.getVisitMemory();
+                record(LRU_TableChange,list_page,i);
             }
         }
         page.setLRUTime(LRU_Time);
@@ -208,6 +235,7 @@ public class PageSystemImpl implements PageSystemService {
                     list_page.merge(input_num.get(i),1,Integer::sum);
                     LFU_Time+=testNum.getVisitMemory();//正常查询页表
                 }
+                record(LFU_TableChange,list_page,i);
                 LFU_Time+=testNum.getVisitMemory();
             }
         }
@@ -236,6 +264,7 @@ public class PageSystemImpl implements PageSystemService {
                     LFU_Time+=testNum.getVisitTLB();
                 }
                 LFU_Time+=testNum.getVisitMemory();
+                record(LFU_TableChange,list_page,i);
             }
         }
         page.setLFUTime(LFU_Time);
