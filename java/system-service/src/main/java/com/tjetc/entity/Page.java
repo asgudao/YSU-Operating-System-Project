@@ -25,4 +25,5 @@ public class Page {
     private Integer LFUTime;
     private Integer OPTTime;
 
+
 }

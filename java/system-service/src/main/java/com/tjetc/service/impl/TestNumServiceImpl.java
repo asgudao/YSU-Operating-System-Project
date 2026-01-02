@@ -1,5 +1,7 @@
 package com.tjetc.service.impl;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.tjetc.common.JsonResult;
 import com.tjetc.dao.TestNumMapper;
 import com.tjetc.entity.TestNum;
@@ -39,6 +41,16 @@ public class TestNumServiceImpl implements TestNumService {
         }
         return JsonResult.success(testNum);
     }
+
+
+    @Override
+    public JsonResult findPage(Integer pageNo, Integer pageSize) {
+        PageHelper.startPage(pageNo, pageSize);
+        List<TestNum> testNums = testNumMapper.selectAll();
+        PageInfo<TestNum> testNumPageInfo = new PageInfo<>(testNums);
+        return JsonResult.success(testNumPageInfo);
+    }
+
 
     @Override
     public JsonResult<TestNum> findAll(){

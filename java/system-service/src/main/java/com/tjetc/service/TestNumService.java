@@ -26,4 +26,13 @@ public interface TestNumService {
      */
     JsonResult findById(Integer id);
 
+    /**
+     * 根据用户名模糊分页查询用户信息
+     *
+     * @param pageNo    页面
+     * @param pageSize  每页数量
+     * @return
+     */
+    JsonResult findPage(Integer pageNo, Integer pageSize);
+
 }
