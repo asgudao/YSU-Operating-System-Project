@@ -10,8 +10,7 @@ export default {
   },
   methods: {
     barStyle(time) {
-      // 将耗时映射到高度，最大 200px，高于最大时间比例缩放
-      const maxTime = Math.max(...this.steps.map(s => s.time))
+      const maxTime = Math.max(...this.steps)
       const height = maxTime ? (time / maxTime) * 200 : 0
       return {
         height: height + 'px',

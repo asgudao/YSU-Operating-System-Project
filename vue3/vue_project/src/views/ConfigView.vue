@@ -28,12 +28,18 @@ export default {
           const rawData = res.data.data
 
           // 转换为前端动画步骤并保存到 pagingStore
-          pagingStore.setExperiment({
-            FIFO: { frames: rawData.fifo_TableChange, tlb: rawData.fifo_TLBChange },
-            LRU: { frames: rawData.lru_TableChange, tlb: rawData.lru_TLBChange },
-            LFU: { frames: rawData.lfu_TableChange, tlb: rawData.lfu_TLBChange },
-            steps: transformChangeToSteps(rawData).steps
-          })
+          // pagingStore.setExperiment({
+          //   FIFO: { frames: rawData.fifo_TableChange, tlb: rawData.fifo_TLBChange },
+          //   LRU: { frames: rawData.lru_TableChange, tlb: rawData.lru_TLBChange },
+          //   LFU: { frames: rawData.lfu_TableChange, tlb: rawData.lfu_TLBChange },
+          //   steps: transformChangeToSteps(rawData).steps
+          // })
+
+          // 使用 transformChangeToSteps 转换
+          const experimentData = transformChangeToSteps(rawData)
+
+          // 保存到 pagingStore
+          pagingStore.setExperiment(experimentData)
 
           router.push('/run')  // 跳转到运行页
         } else {
@@ -61,6 +67,7 @@ export default {
     return { form, startExperiment }
   }
 }
+
 </script>
 
 <template>

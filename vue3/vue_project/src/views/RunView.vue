@@ -5,23 +5,62 @@ import GanttLikeBar from '@/components/GanttLikeBar.vue'
 import ConfigView from '@/views/ConfigView.vue'
 import { pagingStore } from '@/store/pagingStore.js'
 import { computed, ref, onUnmounted, watch } from 'vue'
-import { transformChangeToSteps } from '@/utils/transformPaging.js'
 
 export default {
   name: 'RunView',
   components: { PageFrameView, AddressStep, GanttLikeBar, ConfigView },
   setup() {
-    const experiment = ref(null)        // 本地存放转换后的实验结果
+    const experiment = ref(null)        // 转换后的实验结果
     const currentStep = ref(0)
     const playing = ref(false)
     let timer = null
 
-    // 监听 pagingStore.experiment，当实验启动成功时，将后端 Change 数据转换
+    // 从 store 获取配置参数
+    const config = computed(() => pagingStore.config || {})
+
+    // 计算每步的耗时数组，用于 GanttLikeBar
+    function computeStepTimes(step, config, algName) {
+      const algStep = step[algName.toLowerCase() + 'Step'] || []
+      const algTLB  = step[algName.toLowerCase() + 'TLB'] || []
+      const times = []
+
+      for (let i = 0; i < algStep.length; i++) {
+        let time = 0
+        const addr = algStep[i]
+
+        if (!addr) {
+          time += config.handleLosepage || 0
+          times.push({ time })
+          continue
+        }
+
+        if (config.useTLB) {
+          if (algTLB[i] === addr) {
+            time += config.visitTLB || 0
+          } else {
+            time += (config.visitTLB || 0) + (config.visitMemory || 0)
+          }
+        } else {
+          time += config.visitMemory || 0
+        }
+
+        times.push({ time })
+      }
+
+      return times
+    }
+
+    // 监听 pagingStore.experiment
     watch(
         () => pagingStore.experiment,
         (val) => {
-          experiment.value = val
-          currentStep.value = 0
+          if (val) {
+            experiment.value = val   // 已经是转换后的数据
+            currentStep.value = 0
+          } else {
+            experiment.value = null
+            currentStep.value = 0
+          }
         },
         { immediate: true }
     )
@@ -73,7 +112,9 @@ export default {
       playing,
       playPause,
       nextStep,
-      prevStep
+      prevStep,
+      computeStepTimes,
+      config
     }
   }
 }
@@ -112,9 +153,26 @@ export default {
                 :isTLB="true"
             />
 
-            <AddressStep :step="steps[currentStep]" />
-            <GanttLikeBar :steps="steps" :title="alg.name + ' 访问耗时'" />
+            <!-- 单步访问 -->
+            <AddressStep
+                :step="{
+                logicAddress: steps[currentStep][alg.name.toLowerCase() + 'Step'][0],
+                pageNo: steps[currentStep][alg.name.toLowerCase() + 'Step'][1],
+                offset: steps[currentStep][alg.name.toLowerCase() + 'Step'][2],
+                hitTLB: steps[currentStep][alg.name.toLowerCase() + 'TLB'][0] === steps[currentStep][alg.name.toLowerCase() + 'Step'][0],
+                pageFault: !steps[currentStep][alg.name.toLowerCase() + 'Step'][0],
+                replacedIndex: null,
+                time: computeStepTimes(steps[currentStep], config, alg.name)[0].time
+              }"
+            />
 
+            <!-- 耗时甘特图 -->
+            <GanttLikeBar
+                :steps="computeStepTimes(steps[currentStep], config, alg.name)"
+                :title="alg.name + ' 访问耗时'"
+            />
+
+            <!-- 控制按钮 -->
             <div class="controls">
               <button @click="prevStep">⏮</button>
               <button @click="playPause">{{ playing ? '⏸' : '▶' }}</button>
