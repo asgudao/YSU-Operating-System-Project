@@ -22,12 +22,8 @@ public class TestNumServiceImpl implements TestNumService {
     @Override
     @Transactional
     public JsonResult add(TestNum testNum){
-        try {
-            testNumMapper.insert(testNum);
-            return JsonResult.success("新增数据成功");
-        }catch (Exception e){
-            throw new RuntimeException("e");
-        }
+        testNumMapper.insert(testNum);
+        return JsonResult.success("新增数据成功");
     }
     
     @Override
