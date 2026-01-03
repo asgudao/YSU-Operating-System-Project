@@ -328,28 +328,30 @@ public class PageSystemImpl implements PageSystemService {
     public JsonResult LFU(){
         Map <String,Integer> list_page = new LinkedHashMap<>();
         Map <String,Integer> list_TLB = new LinkedHashMap<>();
-        if(testNum.getUseTLB()==0){//没有快表
-            for(int i=0;i<input_num.size();i++){
-                if(!LFU_PageTable.contains(input_num.get(i))){//页表未查询到，产生缺页中断
-                    LFU_Time+=testNum.getVisitMemory();
-                    if(LFU_PageTable.size()==testNum.getPageNum()){//页表满了
-                        String delete_num=list_TLB.keySet().iterator().next();
-                        LFU_PageTable.remove(delete_num);//去掉页表中最久未使用的值
-                        list_page.remove(delete_num);//去掉最久未使用的值
+        if (testNum.getUseTLB() == 0) {                 // 没有快表
+            for (int i = 0; i < input_num.size(); i++) {
+                if (!LFU_PageTable.contains(input_num.get(i))) {   // 缺页
+                    LFU_Time += testNum.getVisitMemory();
+                    if (LFU_PageTable.size() == testNum.getPageNum()) { // 页表满
+                        // 安全淘汰：map 不能为空
+                        if (!list_page.isEmpty()) {
+                            String deleteNum = list_page.keySet().iterator().next();
+                            LFU_PageTable.remove(deleteNum);
+                            list_page.remove(deleteNum);
+                        }
                     }
-                    list_page.put(input_num.get(i),1);//加入一个新值
-                    LFU_PageTable.add(input_num.get(i));//给页表中加入此数据
-                    LFU_Time += testNum.getHandleLosepage();//加处理缺页中断的情况
-                    LFU_Losepage++;//加出现缺页中断情况的次数
-                    i--;//让下次接着查询此值
+                    list_page.put(input_num.get(i), 1);           // 加入新页
+                    LFU_PageTable.add(input_num.get(i));
+                    LFU_Time += testNum.getHandleLosepage();
+                    LFU_Losepage++;
+                    i--;                                          // 重试同一页
                     continue;
+                } else {                                          // 命中
+                    list_page.merge(input_num.get(i), 1, Integer::sum);
+                    LFU_Time += testNum.getVisitMemory();
                 }
-                else{
-                    list_page.merge(input_num.get(i),1,Integer::sum);
-                    LFU_Time+=testNum.getVisitMemory();//正常查询页表
-                }
-                record(LFU_TableChange,LFU_PageTable,i);
-                LFU_Time+=testNum.getVisitMemory();
+                record(LFU_TableChange, LFU_PageTable, i);
+                LFU_Time += testNum.getVisitMemory();             // 取数时间
             }
         }
         else if (testNum.getUseTLB()==1){

@@ -33,7 +33,7 @@ public interface TestNumService {
      * @param pageSize  每页数量
      * @return
      */
-    JsonResult findPage(Integer pageNo, Integer pageSize);
+    JsonResult findPage(Integer pageNo, Integer pageSize,String username);
 
     /**
      * 根据id删除

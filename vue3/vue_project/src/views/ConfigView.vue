@@ -111,38 +111,112 @@ export default {
         <textarea v-model="form.inputNum" rows="3" cols="50"></textarea>
       </div>
 
-      <button type="submit">开始实验</button>
-      <button type="button" @click="gotoHistory">历史测试查询</button>
+      <div class="button-group">
+        <button type="submit">开始实验</button>
+        <button type="button" @click="gotoHistory">历史测试查询</button>
+      </div>
 
     </form>
   </div>
 </template>
 
 <style scoped>
-.config-view {
-  padding: 20px;
-}
-.config-view form div {
-  margin-bottom: 10px;
-}
-.config-view form button {
-  margin-right: 10px;
-  padding: 8px 16px;
-  background-color: #409eff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: background-color 0.3s;
-}
-.config-view form button:hover {
-  background-color: #66b1ff;
-}
-.config-view form button[type="button"] {
-  background-color: #909399;
-}
-.config-view form button[type="button"]:hover {
-  background-color: #a6a9ad;
-}
+    .config-view {
+        padding: 20px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    
+    .config-view h2 {
+        margin-bottom: 20px;
+        color: #333;
+        font-size: 20px;
+        text-align: center;
+    }
+    
+    .config-view form {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 15px;
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    .config-view form div {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        margin-bottom: 0;
+    }
+    
+    .config-view form div:nth-child(7) {
+        grid-column: 1 / -1;
+    }
+    
+    .config-view form label {
+        font-size: 14px;
+        font-weight: 500;
+        color: #606266;
+    }
+    
+    .config-view form input,
+    .config-view form select,
+    .config-view form textarea {
+        padding: 8px 12px;
+        border: 1px solid #dcdfe6;
+        border-radius: 4px;
+        font-size: 14px;
+        transition: border-color 0.2s;
+    }
+    
+    .config-view form input:focus,
+    .config-view form select:focus,
+    .config-view form textarea:focus {
+        outline: none;
+        border-color: #409eff;
+        box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
+    }
+    
+    .config-view form textarea {
+        resize: vertical;
+        min-height: 80px;
+    }
+    
+    .config-view form button {
+        margin-right: 10px;
+        padding: 10px 20px;
+        background-color: #409eff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.3s;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .config-view form button:hover {
+        background-color: #66b1ff;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        transform: translateY(-1px);
+    }
+    
+    .config-view form button[type="button"] {
+        background-color: #909399;
+    }
+    
+    .config-view form button[type="button"]:hover {
+        background-color: #a6a9ad;
+    }
+    
+    .button-group {
+        grid-column: 1 / -1;
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 10px;
+    }
 </style>
