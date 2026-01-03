@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("use")
 @Slf4j
-@CrossOrigin(origins = "*", allowedHeaders = "*", maxAge = 3600)// 全局允许跨域
 public class UseController {
     @Autowired
     private PageService pageService;
@@ -50,7 +49,7 @@ public class UseController {
     }
 
     @RequestMapping("start")
-    public JsonResult start( @RequestBody TestNum testNum){
+    public JsonResult start(TestNum testNum){
         return pageSystemService.start(testNum);
     }
 

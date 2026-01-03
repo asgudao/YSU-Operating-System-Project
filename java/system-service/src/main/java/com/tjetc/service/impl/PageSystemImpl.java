@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -55,7 +56,6 @@ public class PageSystemImpl implements PageSystemService {
     @Override
     public JsonResult start(TestNum testNum){
         this.testNum = testNum;
-        System.out.println("testNum:"+testNum);
         inputProcess(testNum.getInputNum());//设置testNum的input_num属性
         FIFO_TableChange=new String[testNum.getPageNum()][input_num.size()];
         LFU_TableChange=new String[testNum.getPageNum()][input_num.size()];
@@ -65,20 +65,16 @@ public class PageSystemImpl implements PageSystemService {
         LRU_TLBChange=new String[testNum.getTlbNum()][input_num.size()];
 
         ExecutorService executor = Executors.newFixedThreadPool(3);
-        executor.submit(this::FIFO);
-        executor.submit(this::LRU);
-        executor.submit(this::LFU);
+        Future<?> f1 = executor.submit(this::FIFO);
+        Future<?> f2 = executor.submit(this::LRU);
+        Future<?> f3 = executor.submit(this::LFU);
         executor.shutdown();
         try {
-            // 等待10分钟（可根据业务调整超时时间），超时则强制关闭
-            if (!executor.awaitTermination(10, TimeUnit.MINUTES)) {
-                executor.shutdownNow(); // 强制关闭
-                return JsonResult.fail("线程执行超时，运行失败");
-            }
-        } catch (InterruptedException e) {
-            executor.shutdownNow(); // 中断时强制关闭
-            e.printStackTrace();
-            return JsonResult.fail("线程执行中断，运行失败");
+            f1.get();   // 阻塞直到 FIFO 算完
+            f2.get();
+            f3.get();
+        } catch (Exception e) {
+            return JsonResult.fail("算法线程异常：" + e.getMessage());
         }
 
         change.setFIFO_TableChange(FIFO_TableChange);
@@ -88,7 +84,7 @@ public class PageSystemImpl implements PageSystemService {
         change.setLFU_TLBChange(LFU_TLBChange);
         change.setLRU_TLBChange(LRU_TLBChange);
         pageService.add(page);
-        testNumService.add(testNum);
+        testNumService.add(this.testNum);
         ifSuccess=1;
         return JsonResult.success("运行成功",testNum);
     }
@@ -180,6 +176,7 @@ public class PageSystemImpl implements PageSystemService {
         }
         page.setFIFOTime(FIFO_Time);
         page.setFIFOLosepage(FIFO_Losepage);
+        System.out.println(FIFO_TLB.toString()+"----------"+FIFO_Time+"-----------"+FIFO_Losepage);
         return JsonResult.success("FIFO成功运行");
     }
 
