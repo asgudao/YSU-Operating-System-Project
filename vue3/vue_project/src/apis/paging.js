@@ -6,7 +6,16 @@ const request = axios.create({
 })
 
 // 启动实验
-export const startPaging = (data) => request.post('/start', data)
+export const startPaging = (data) => {
+    return request({
+        url: '/use/start',
+        method: 'post',
+        data,
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+}
 
 // 获取所有实验记录
 export const getAllPages = () => request.get('/page/select/all')

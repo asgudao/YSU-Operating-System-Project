@@ -56,6 +56,7 @@ public class PageSystemImpl implements PageSystemService {
     @Override
     public JsonResult start(TestNum testNum){
         this.testNum = testNum;
+        System.out.println("testNum:"+testNum);
         inputProcess(testNum.getInputNum());//设置testNum的input_num属性
         FIFO_TableChange=new String[testNum.getPageNum()][input_num.size()];
         LFU_TableChange=new String[testNum.getPageNum()][input_num.size()];

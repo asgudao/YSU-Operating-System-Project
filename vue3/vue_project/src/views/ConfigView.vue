@@ -58,7 +58,7 @@ export default {
 
       <div>
         <label>TLB容量:</label>
-        <input type="number" v-model.number="form.TLBNum" min="0">
+        <input type="number" v-model.number="form.TLBNum" min="1">
       </div>
 
       <div>
