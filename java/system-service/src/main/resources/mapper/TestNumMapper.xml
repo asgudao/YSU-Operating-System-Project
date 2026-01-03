@@ -15,13 +15,13 @@
         create_time
     </sql>
     <resultMap id="baseMap" type="testNum">
-        <result column=" id" property="id"></result>
-        <result column=" page_num" property="pageNum"></result>
-        <result column=" use_TLB" property="useTLB"></result>
-        <result column=" TLB_num" property="TLBNum"></result>
-        <result column=" visit_memory" property="visitMemory"></result>
-        <result column=" visit_TLB" property="visitTLB"></result>
-        <result column=" handle_losepage" property="handleLosepage"></result>
+        <result column="id" property="id"></result>
+        <result column="page_num" property="pageNum"></result>
+        <result column="use_TLB" property="useTLB"></result>
+        <result column="TLB_num" property="TLBNum"></result>
+        <result column="visit_memory" property="visitMemory"></result>
+        <result column="visit_TLB" property="visitTLB"></result>
+        <result column="handle_losepage" property="handleLosepage"></result>
         <result column="input_num" property="inputNum"></result>
         <result column="create_time" property="createTime"></result>
     </resultMap>

@@ -1,14 +1,9 @@
-import axios from 'axios'
-
-const request = axios.create({
-    baseURL: '/api', // 会被 Vite 代理到 http://localhost:8081
-    timeout: 5000
-})
+import request from "@/utils/request"
 
 // 启动实验
-export const startPaging = (data) => {
+const startPaging = (data) => {
     return request({
-        url: '/use/start',
+        url: '/api/use/start',
         method: 'post',
         data,
         headers: {
@@ -18,10 +13,32 @@ export const startPaging = (data) => {
 }
 
 // 获取所有实验记录
-export const getAllPages = () => request.get('/page/select/all')
+const getAllPages = () => {
+    return request({
+        url: '/api/page/select/all',
+        method: 'get'
+    })
+}
 
 // 根据 ID 获取实验数据
-export const getTestNum = (id) => request.get(`/testNum/select/${id}`)
+const getTestNum = (id) => {
+    return request({
+        url: `/api/testNum/select/${id}`,
+        method: 'get'
+    })
+}
 
 // 删除实验
-export const deletePage = (id) => request.get(`/page/delete/${id}`)
+const deletePage = (id) => {
+    return request({
+        url: `/api/page/delete/${id}`,
+        method: 'get'
+    })
+}
+
+export{
+    startPaging,
+    getAllPages,
+    getTestNum,
+    deletePage
+}

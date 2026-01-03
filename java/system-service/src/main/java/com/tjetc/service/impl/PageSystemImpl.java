@@ -34,9 +34,8 @@ public class PageSystemImpl implements PageSystemService {
     private List<String> LFU_PageTable = new ArrayList<>();
     private Integer LFU_Time=0;
     private Integer LFU_Losepage=0;
-
+    private Page page = new Page();
     private TestNum testNum = new TestNum();
-    private Page page=new Page();
     private Change change=new Change();
     List<String> input_num=new ArrayList<>();
     private String[][] FIFO_TableChange;
@@ -53,13 +52,14 @@ public class PageSystemImpl implements PageSystemService {
     @Override
     public JsonResult start(TestNum testNum){
         this.testNum = testNum;
+        testNumService.add(testNum);
         inputProcess(testNum.getInputNum());//设置testNum的input_num属性
         FIFO_TableChange=new String[testNum.getPageNum()][input_num.size()];
         LFU_TableChange=new String[testNum.getPageNum()][input_num.size()];
         LRU_TableChange=new String[testNum.getPageNum()][input_num.size()];
-        FIFO_TLBChange=new String[testNum.getTlbNum()][input_num.size()];
-        LFU_TLBChange=new String[testNum.getTlbNum()][input_num.size()];
-        LRU_TLBChange=new String[testNum.getTlbNum()][input_num.size()];
+        FIFO_TLBChange=new String[testNum.getTLBNum()][input_num.size()];
+        LFU_TLBChange=new String[testNum.getTLBNum()][input_num.size()];
+        LRU_TLBChange=new String[testNum.getTLBNum()][input_num.size()];
 
         ExecutorService executor = Executors.newFixedThreadPool(3);
 
@@ -89,7 +89,49 @@ public class PageSystemImpl implements PageSystemService {
         change.setLFU_TLBChange(LFU_TLBChange);
         change.setLRU_TLBChange(LRU_TLBChange);
         pageService.add(page);
-        testNumService.add(this.testNum);
+        ifSuccess=1;
+        return JsonResult.success("运行成功",testNum);
+    }
+
+
+    @Override
+    public JsonResult test(TestNum testNum){
+        this.testNum = testNum;
+        inputProcess(testNum.getInputNum());//设置testNum的input_num属性
+        FIFO_TableChange=new String[testNum.getPageNum()][input_num.size()];
+        LFU_TableChange=new String[testNum.getPageNum()][input_num.size()];
+        LRU_TableChange=new String[testNum.getPageNum()][input_num.size()];
+        FIFO_TLBChange=new String[testNum.getTLBNum()][input_num.size()];
+        LFU_TLBChange=new String[testNum.getTLBNum()][input_num.size()];
+        LRU_TLBChange=new String[testNum.getTLBNum()][input_num.size()];
+
+        ExecutorService executor = Executors.newFixedThreadPool(3);
+
+        try {
+            CompletableFuture<Void> f1 =
+                    CompletableFuture.runAsync(this::FIFO, executor);
+            CompletableFuture<Void> f2 =
+                    CompletableFuture.runAsync(this::LRU, executor);
+            CompletableFuture<Void> f3 =
+                    CompletableFuture.runAsync(this::LFU, executor);
+
+            // 等三个算法全部跑完（有异常会直接抛）
+            CompletableFuture.allOf(f1, f2, f3).join();
+
+        } catch (CompletionException e) {
+            Throwable cause = e.getCause();
+            return JsonResult.fail("算法线程异常：" +
+                    (cause != null ? cause.getMessage() : e.getMessage()));
+        } finally {
+            executor.shutdown();
+        }
+
+        change.setFIFO_TableChange(FIFO_TableChange);
+        change.setLFU_TableChange(LFU_TableChange);
+        change.setLRU_TableChange(LRU_TableChange);
+        change.setFIFO_TLBChange(FIFO_TLBChange);
+        change.setLFU_TLBChange(LFU_TLBChange);
+        change.setLRU_TLBChange(LRU_TLBChange);
         ifSuccess=1;
         return JsonResult.success("运行成功",testNum);
     }
@@ -97,6 +139,7 @@ public class PageSystemImpl implements PageSystemService {
     @Override
     public JsonResult getChange(){
         if (ifSuccess==1){
+            ifSuccess=0;
             return JsonResult.success("运行成功",change);
         }
         return JsonResult.fail("运行失败");
@@ -122,7 +165,6 @@ public class PageSystemImpl implements PageSystemService {
 
     public JsonResult FIFO(){
         List <String>list_page = new ArrayList<>();
-        System.out.println("123");
         List<String>list_TLB = new ArrayList<>();
         if(testNum.getUseTLB()==0){//没有快表
             for(int i=0;i<input_num.size();i++){
@@ -152,7 +194,7 @@ public class PageSystemImpl implements PageSystemService {
                     FIFO_Time+=testNum.getVisitTLB();
                     if(!FIFO_PageTable.contains(input_num.get(i))){//页表未查询到，产生缺页中断
                         FIFO_Time+=testNum.getVisitMemory();//查询页表时间
-                        if(FIFO_TLB.size()==testNum.getTlbNum()){
+                        if(FIFO_TLB.size()==testNum.getTLBNum()){
                             FIFO_TLB.remove(list_TLB.get(0));//去掉快表中最先进入的那个值
                             list_TLB.remove(0);//去掉最先进入的值
                         }
@@ -218,8 +260,10 @@ public class PageSystemImpl implements PageSystemService {
         else if (testNum.getUseTLB()==1){
             for(int i=0;i<input_num.size();i++){
                 if(!LRU_TLB.contains(input_num.get(i))){//tlb未查询到
+                    LRU_Time+=testNum.getVisitTLB();
                     if(!LRU_PageTable.contains(input_num.get(i))){//页表未查询到，产生缺页中断
-                        if (LRU_TLB.size()==testNum.getTlbNum()) {
+                        LRU_Time+=testNum.getVisitMemory();
+                        if (LRU_TLB.size()==testNum.getTLBNum()) {
                             LRU_TLB.remove(list_page.get(0));//去掉快表中最久未使用的那个值
                             list_TLB.remove(0);
                         }
@@ -290,8 +334,10 @@ public class PageSystemImpl implements PageSystemService {
         else if (testNum.getUseTLB()==1){
             for(int i=0;i<input_num.size();i++){
                 if(!LFU_TLB.contains(input_num.get(i))){//tlb未查询到
+                    LFU_Time+=testNum.getVisitTLB();
                     if(!LFU_PageTable.contains(input_num.get(i))){//页表未查询到，产生缺页中断
-                        if(LFU_TLB.size()==testNum.getTlbNum()){//快表满了
+                        LFU_Time+=testNum.getVisitMemory();
+                        if(LFU_TLB.size()==testNum.getTLBNum()){//快表满了
                             String delete_num=list_TLB.keySet().iterator().next();
                             LFU_TLB.remove(delete_num);//去掉快表中最久未使用的那个值
                             list_TLB.remove(delete_num);
