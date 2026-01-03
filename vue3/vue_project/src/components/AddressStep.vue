@@ -1,4 +1,4 @@
-<script>//单步访问展示
+<script>
 export default {
   name: 'AddressStep',
   props: {
@@ -13,10 +13,9 @@ export default {
 <template>
   <div class="address-step" v-if="step">
     <h4>当前访问</h4>
+<!--    <p>{{ steps[currentStep] }}</p>-->
     <ul>
       <li><strong>逻辑地址：</strong>{{ step.logicAddress }}</li>
-      <li><strong>页号：</strong>{{ step.pageNo }}</li>
-      <li><strong>页内偏移：</strong>{{ step.offset }}</li>
       <li>
         <strong>TLB命中：</strong>
         <span :class="step.hitTLB ? 'hit' : 'miss'">{{ step.hitTLB ? '命中' : '未命中' }}</span>
@@ -25,8 +24,8 @@ export default {
         <strong>缺页：</strong>
         <span :class="step.pageFault ? 'miss' : 'hit'">{{ step.pageFault ? '缺页' : '无缺页' }}</span>
       </li>
-      <li><strong>替换页框：</strong>{{ step.replacedIndex !== undefined ? step.replacedIndex : '-' }}</li>
-      <li><strong>耗时：</strong>{{ step.time }} ns</li>
+      <li><strong>替换页框：</strong>{{ step.replacedIndex !== undefined && step.replacedIndex !== null ? step.replacedIndex : '-' }}</li>
+      <li><strong>总耗时：</strong>{{ step.time }} ns</li>
     </ul>
   </div>
 </template>

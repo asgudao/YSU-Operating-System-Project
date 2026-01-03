@@ -5,6 +5,7 @@ import GanttLikeBar from '@/components/GanttLikeBar.vue'
 import ConfigView from '@/views/ConfigView.vue'
 import { pagingStore } from '@/store/pagingStore.js'
 import { computed, ref, onUnmounted, watch } from 'vue'
+import DebugTable from "@/views/debugtable.vue";
 
 export default {
   name: 'RunView',
@@ -13,7 +14,7 @@ export default {
       return pagingStore
     }
   },
-  components: { PageFrameView, AddressStep, GanttLikeBar, ConfigView },
+  components: {DebugTable, PageFrameView, AddressStep, GanttLikeBar, ConfigView },
   setup() {
     const experiment = ref(null)        // 转换后的实验结果
     const currentStep = ref(0)
@@ -150,6 +151,11 @@ export default {
         </div>
 
         <div v-else class="algorithm-container">
+          <DebugTable
+              :steps="steps"
+              :algorithms="algorithms"
+              :currentStep="currentStep"
+          />
           <div
               v-for="alg in algorithms"
               :key="alg.name"
@@ -172,18 +178,7 @@ export default {
             />
 
             <!-- 单步访问 -->
-            <AddressStep
-                v-if="steps[currentStep]"
-                :step="{
-                logicAddress: steps[currentStep][alg.name.toLowerCase() + 'Step'][0],
-                pageNo: steps[currentStep][alg.name.toLowerCase() + 'Step'][1],
-                offset: steps[currentStep][alg.name.toLowerCase() + 'Step'][2],
-                hitTLB: steps[currentStep][alg.name.toLowerCase() + 'TLB'][0] === steps[currentStep][alg.name.toLowerCase() + 'Step'][0],
-                pageFault: !steps[currentStep][alg.name.toLowerCase() + 'Step'][0],
-                replacedIndex: null,
-                time: computeStepTimes(steps[currentStep], config, alg.name)[0].time
-              }"
-            />
+            <AddressStep :step="steps[currentStep]" />
 
             <GanttLikeBar
                 v-if="steps[currentStep]"
