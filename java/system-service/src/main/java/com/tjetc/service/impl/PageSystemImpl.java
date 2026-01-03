@@ -48,9 +48,31 @@ public class PageSystemImpl implements PageSystemService {
 
     private Integer ifSuccess=0;
 
+
+    private void clean() {
+        FIFO_TLB.clear();
+        FIFO_PageTable.clear();
+        FIFO_Time = 0;
+        FIFO_Losepage = 0;
+
+        LRU_TLB.clear();
+        LRU_PageTable.clear();
+        LRU_Time = 0;
+        LRU_Losepage = 0;
+
+        LFU_TLB.clear();
+        LFU_PageTable.clear();
+        LFU_Time = 0;
+        LFU_Losepage = 0;
+
+        input_num.clear();
+    }
+
     //主函数
     @Override
     public JsonResult start(TestNum testNum){
+        clean();
+        System.out.println(testNum.getInputNum());
         this.testNum = testNum;
         testNumService.add(testNum);
         inputProcess(testNum.getInputNum());//设置testNum的input_num属性
@@ -96,9 +118,9 @@ public class PageSystemImpl implements PageSystemService {
         page.setTId(testNum.getId());
         pageService.add(page);
         ifSuccess=1;
+        System.out.println("----------------"+testNum.getInputNum());
         return JsonResult.success("运行成功",change);
     }
-
 
     @Override
     public JsonResult test(TestNum testNum){
@@ -155,7 +177,7 @@ public class PageSystemImpl implements PageSystemService {
     //输入处理,设置了input_num属性
     @Override
     public JsonResult inputProcess(String input){
-        List<String> processInput = Arrays.asList(input.trim().split("[,;\\s，。‘’'\"“”、]+"));
+        List<String> processInput = Arrays.asList(input.trim().split("[,;\\s，。‘’'\"“”、.]+"));
         for (String str : processInput) {
             this.input_num.add(str);
         }

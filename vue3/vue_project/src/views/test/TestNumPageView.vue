@@ -69,6 +69,15 @@ const handleConfirmDelete= async (id)=>{
     //要重新查询
     searchTestPage(pageNo.value,pageSize.value)
 }
+
+const handleConfirmReplay= async (id)=>{
+    console.log(`id=${id}`)
+    //请求后端api做删除操作
+    await testDeleteById({id})
+    ElMessage.success("重演测试成功")
+    //要重新查询
+    searchTestPage(pageNo.value,pageSize.value)
+}
 </script>
 
 <template>
@@ -100,6 +109,18 @@ const handleConfirmDelete= async (id)=>{
                     >
                         <template #reference>
                             <el-button link type="primary" size="small">删除</el-button>
+                        </template>
+                    </el-popconfirm>
+                                        <el-popconfirm
+                        confirm-button-text="确定"
+                        cancel-button-text="取消"
+                        icon="WarningFilled"
+                        icon-color="#626AEF"
+                        title="是否确认重演此测试?"
+                        @confirm="handleConfirmReplay(scope.row.id)"
+                    >
+                        <template #reference>
+                            <el-button link type="primary" size="small">重演</el-button>
                         </template>
                     </el-popconfirm>
                 </template>
