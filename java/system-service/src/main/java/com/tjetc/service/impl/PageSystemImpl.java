@@ -65,7 +65,10 @@ public class PageSystemImpl implements PageSystemService {
         LFU_Time = 0;
         LFU_Losepage = 0;
 
-        input_num.clear();
+        this.testNum=new TestNum();
+        this.page=new Page();
+        this.change=new Change();
+        input_num=new ArrayList<>();
     }
 
     //主函数
@@ -89,25 +92,15 @@ public class PageSystemImpl implements PageSystemService {
         LRU_TLBChange=new String[testNum.getTLBNum()][input_num.size()];
 
         ExecutorService executor = Executors.newFixedThreadPool(3);
-
-        try {
-            CompletableFuture<Void> f1 =
-                    CompletableFuture.runAsync(this::FIFO, executor);
-            CompletableFuture<Void> f2 =
-                    CompletableFuture.runAsync(this::LRU, executor);
-            CompletableFuture<Void> f3 =
-                    CompletableFuture.runAsync(this::LFU, executor);
-
-            // 等三个算法全部跑完（有异常会直接抛）
-            CompletableFuture.allOf(f1, f2, f3).join();
-
-        } catch (CompletionException e) {
-            Throwable cause = e.getCause();
-            return JsonResult.fail("算法线程异常：" +
-                    (cause != null ? cause.getMessage() : e.getMessage()));
-        } finally {
-            executor.shutdown();
-        }
+        CompletableFuture<Void> f1 =
+                CompletableFuture.runAsync(this::FIFO, executor);
+        CompletableFuture<Void> f2 =
+                CompletableFuture.runAsync(this::LRU, executor);
+        CompletableFuture<Void> f3 =
+                CompletableFuture.runAsync(this::LFU, executor);
+        // 等三个算法全部跑完（有异常会直接抛）
+        CompletableFuture.allOf(f1, f2, f3).join();
+        executor.shutdown();
 
         change.setFIFO_TableChange(FIFO_TableChange);
         change.setLFU_TableChange(LFU_TableChange);
@@ -186,7 +179,8 @@ public class PageSystemImpl implements PageSystemService {
 
     //用于给tablechange赋值
     public synchronized void record(String[][] TableChange,List<String> list,Integer i){
-        for(int j = 0;j< list.size();j++){//行
+        int rows = Math.min(list.size(), TableChange.length);
+        for(int j = 0;j< rows;j++){//行
             TableChange[j][i]=list.get(j);
         }
     }
@@ -253,7 +247,6 @@ public class PageSystemImpl implements PageSystemService {
         }
         page.setFIFOTime(FIFO_Time);
         page.setFIFOLosepage(FIFO_Losepage);
-        System.out.println(FIFO_TLB.toString()+"----------"+FIFO_Time+"-----------"+FIFO_Losepage);
         return JsonResult.success("FIFO成功运行");
     }
 
