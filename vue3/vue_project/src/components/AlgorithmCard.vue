@@ -1,109 +1,88 @@
-<script>//算法单卡片
-import PageFrameView from './PageFrameView.vue'
-import AddressStep from './AddressStep.vue'
-import { ref, watch, onUnmounted } from 'vue'
-
+<script>
 export default {
-  name: 'AlgorithmCard',
-  components: { PageFrameView, AddressStep },
+  name: 'AddressStep',
   props: {
-    title: { type: String, default: '' },
-    frames: { type: Array, required: true },      // 二维数组 [step][pageFrameIndex]
-    tlbFrames: { type: Array, default: () => [] },// 可选 TLB frames
-    steps: { type: Array, required: true }       // 每一步的访问信息
+    step: { type: Object, default: null },
+    alg: { type: String, required: true } // 'FIFO', 'LRU', 'LFU'
   },
-  setup(props) {
-    const currentStep = ref(0)
-    const playing = ref(false)
-    let timer = null
-
-    const playPause = () => {
-      playing.value = !playing.value
-      if (playing.value) {
-        timer = setInterval(() => {
-          if (currentStep.value < props.steps.length - 1) {
-            currentStep.value++
-          } else {
-            clearInterval(timer)
-            playing.value = false
-          }
-        }, 800)
-      } else {
-        clearInterval(timer)
-      }
-    }
-
-    const nextStep = () => {
-      if (currentStep.value < props.steps.length - 1) currentStep.value++
-    }
-
-    const prevStep = () => {
-      if (currentStep.value > 0) currentStep.value--
-    }
-    // 清理定时器
-    onUnmounted(() => {
-      if (timer) clearInterval(timer)
-    })
-
-    return {
-      currentStep,
-      playing,
-      playPause,
-      nextStep,
-      prevStep
+  computed: {
+    // 算法小写前缀
+    prefix() {
+      return this.alg.toLowerCase();
+    },
+    // 逻辑地址
+    logicAddress() {
+      return this.step?.[this.prefix + 'Step'][0] || '-';
+    },
+    // TLB命中
+    hitTLB() {
+      const tlb = this.step?.[this.prefix + 'TLB'] || [];
+      return tlb.includes(this.logicAddress);
+    },
+    // 缺页
+    pageFault() {
+      const memStep = this.step?.[this.prefix + 'Step'] || [];
+      return !memStep.includes(this.logicAddress);
+    },
+    // 替换页框
+    replacedIndex() {
+      if (!this.pageFault) return null;
+      const memStep = this.step?.[this.prefix + 'Step'] || [];
+      // 找到第一个 null 被替换
+      return memStep.findIndex(v => v === null);
+    },
+    // 总耗时
+    time() {
+      const cfg = this.step?.config || {};
+      if (this.hitTLB) return cfg.visitTLB ?? 10;
+      if (this.pageFault) return cfg.handleLosepage ?? 2000;
+      return cfg.visitMemory ?? 100;
     }
   }
 }
 </script>
 
 <template>
-  <div class="algorithm-card">
-    <h3>{{ title }}</h3>
-
-    <!-- 内存页框 -->
-    <PageFrameView
-        :frames="frames[currentStep]"
-        :highlight="steps[currentStep]"
-        :title="title + ' 内存页框'"
-    />
-
-    <!-- TLB -->
-    <PageFrameView
-        v-if="tlbFrames && tlbFrames.length"
-        :frames="tlbFrames[currentStep]"
-        :highlight="steps[currentStep]"
-        :title="title + ' TLB'"
-        :isTLB="true"
-    />
-
-    <!-- 当前访问信息 -->
-    <AddressStep :step="steps[currentStep]" />
-
-    <!-- 播放控制按钮 -->
-    <div class="controls">
-      <button @click="prevStep">⏮</button>
-      <button @click="playPause">{{ playing ? '⏸' : '▶' }}</button>
-      <button @click="nextStep">⏭</button>
-      <span>{{ currentStep + 1 }} / {{ steps.length }}</span>
-    </div>
+  <div class="address-step" v-if="step">
+    <h4>{{ alg }} 当前访问</h4>
+    <ul>
+      <li><strong>逻辑地址：</strong>{{ logicAddress }}</li>
+      <li>
+        <strong>TLB命中：</strong>
+        <span :class="hitTLB ? 'hit' : 'miss'">{{ hitTLB ? '命中' : '未命中' }}</span>
+      </li>
+      <li>
+        <strong>缺页：</strong>
+        <span :class="pageFault ? 'miss' : 'hit'">{{ pageFault ? '缺页' : '无缺页' }}</span>
+      </li>
+      <li><strong>替换页框：</strong>{{ replacedIndex !== null ? replacedIndex : '-' }}</li>
+      <li><strong>总耗时：</strong>{{ time }} ns</li>
+    </ul>
   </div>
 </template>
 
 <style scoped>
-.algorithm-card {
+.address-step {
   border: 1px solid #ccc;
-  padding: 15px;
-  margin-bottom: 20px;
+  padding: 10px;
   border-radius: 6px;
-  background-color: #fafafa;
-}
-.controls {
   margin-top: 10px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  background-color: #fff8dc;
 }
-.controls button {
-  padding: 5px 10px;
+.address-step ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.address-step li {
+  margin-bottom: 4px;
+}
+.hit {
+  color: green;
+  font-weight: bold;
+}
+.miss {
+  color: red;
+  font-weight: bold;
 }
 </style>

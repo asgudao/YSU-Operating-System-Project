@@ -15,7 +15,7 @@ export const pagingStore = reactive({
     // 设置实验结果和配置
     setExperiment(data, cfg) {
         this.experiment = data
-        this.config = cfg || null
+        this.config = cfg || this.config
         this.currentStep = 0
     },
 

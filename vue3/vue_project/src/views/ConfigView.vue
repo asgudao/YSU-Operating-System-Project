@@ -28,7 +28,8 @@ export default {
           const rawData = res.data.data
 
           // 使用 transformChangeToSteps 转换
-          const experimentData = transformChangeToSteps(rawData)
+          const experimentData = transformChangeToSteps(rawData, form)
+
           console.log('experimentData:', experimentData)
           // 保存到 pagingStore
           pagingStore.setExperiment(experimentData,{ ...form })
