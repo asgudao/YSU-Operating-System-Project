@@ -222,32 +222,157 @@ export default {
 </template>
 
 <style scoped>
+/* 主容器样式 */
+.run-view {
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* 标题样式 */
+.run-view h2 {
+    font-size: 24px;
+    color: #303133;
+    margin-bottom: 20px;
+    font-weight: 600;
+    text-align: center;
+}
+
+.run-view h3 {
+    font-size: 18px;
+    color: #606266;
+    margin-bottom: 15px;
+    font-weight: 500;
+    border-bottom: 1px solid #ebeef5;
+    padding-bottom: 8px;
+}
+
+/* 主布局容器 */
 .main-container {
-  display: flex;
-  gap: 20px;
+    display: flex;
+    gap: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
 }
+
+/* 动画列样式 */
 .animation-column {
-  flex: 3;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+    flex: 3;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    overflow-y: auto;
+    max-height: calc(100vh - 120px);
 }
-.config-column {
-  flex: 1;
+
+/* 算法卡片容器 */
+.algorithm-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
 }
+
+/* 算法卡片样式 */
 .algorithm-card-wrapper {
-  border: 1px solid #ccc;
-  padding: 15px;
-  border-radius: 6px;
-  background-color: #fafafa;
+    background: #fafafa;
+    border: 1px solid #ebeef5;
+    border-radius: 8px;
+    padding: 15px;
+    transition: all 0.3s;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
+
+.algorithm-card-wrapper:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-color: #409eff;
+}
+
+/* 配置列样式 */
+.config-column {
+    flex: 1;
+    background: #f5f7fa;
+    padding: 20px;
+    border-left: 1px solid #ebeef5;
+    overflow-y: auto;
+    max-height: calc(100vh - 120px);
+}
+
+/* 控制按钮样式 */
 .controls {
-  margin-top: 10px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
+    margin-top: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: center;
+    background: white;
+    padding: 10px;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
+
 .controls button {
-  padding: 5px 10px;
+    padding: 8px 16px;
+    background: #409eff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.controls button:hover {
+    background: #66b1ff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.controls span {
+    font-size: 14px;
+    color: #606266;
+    font-weight: 500;
+    min-width: 80px;
+    text-align: center;
+}
+
+/* 空状态样式 */
+.run-view p {
+    text-align: center;
+    color: #909399;
+    font-size: 16px;
+    padding: 40px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* 滚动条样式 */
+.animation-column::-webkit-scrollbar,
+.config-column::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.animation-column::-webkit-scrollbar-track,
+.config-column::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.animation-column::-webkit-scrollbar-thumb,
+.config-column::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+.animation-column::-webkit-scrollbar-thumb:hover,
+.config-column::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
 }
 </style>

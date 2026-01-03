@@ -19,4 +19,13 @@ public interface TestNumMapper extends BaseMapper<TestNum> {
      * @return
      */
     List<TestNum> selectAll();
+
+
+    /**
+     * 根据用户名模糊匹配查询用户信息
+     *
+     * @param username
+     * @return
+     */
+    List<TestNum> selectLikeUsername(String username);
 }

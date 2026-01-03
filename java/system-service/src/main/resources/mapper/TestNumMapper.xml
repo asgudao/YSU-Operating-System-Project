@@ -7,6 +7,7 @@
         id,
         page_num,
         use_TLB,
+        TLB_num,
         visit_memory,
         visit_TLB,
         handle_losepage,
@@ -33,5 +34,10 @@
         select <include refid="columnName"></include>
         from test_num
     </select>
-
+    <select id="selectLikeUsername" resultMap="baseMap">
+        select
+        <include refid="columnName"></include>
+        from test_num
+        order by id desc
+    </select>
 </mapper>

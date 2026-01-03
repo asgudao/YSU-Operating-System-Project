@@ -44,8 +44,9 @@ public class UseController {
 
     @RequestMapping("page")
     public JsonResult page(@RequestParam(value = "pageNo", required = false, defaultValue = "1") Integer pageNo,
-                           @RequestParam(value = "pageSize", required = false, defaultValue = "10") Integer pageSize) {
-        return testNumService.findPage(pageNo, pageSize);
+                           @RequestParam(value = "pageSize", required = false, defaultValue = "10") Integer pageSize,
+                            @RequestParam(value = "username", required = false, defaultValue = "") String username) {
+        return testNumService.findPage(pageNo, pageSize,username);
     }
 
     @RequestMapping("start")

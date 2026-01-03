@@ -40,11 +40,15 @@ public class TestNumServiceImpl implements TestNumService {
 
 
     @Override
-    public JsonResult findPage(Integer pageNo, Integer pageSize) {
+    public JsonResult findPage(Integer pageNo, Integer pageSize, String username) {
         PageHelper.startPage(pageNo, pageSize);
-        List<TestNum> testNums = testNumMapper.selectAll();
-        PageInfo<TestNum> testNumPageInfo = new PageInfo<>(testNums);
-        return JsonResult.success(testNumPageInfo);
+        //处理username两端有空格情况
+        if (username != null) {
+            username = username.trim();
+        }
+        List<TestNum> questions = testNumMapper.selectLikeUsername(username);
+        PageInfo<TestNum> questionPageInfo = new PageInfo<>(questions);
+        return JsonResult.success(questionPageInfo);
     }
 
 
