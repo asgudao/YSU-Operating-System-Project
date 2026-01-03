@@ -1,6 +1,6 @@
 <script>
 // 参数配置页
-import { startPaging } from '@/api/paging.js'
+import { startPaging } from '@/apis/paging.js'
 import { pagingStore } from '@/store/pagingStore.js'
 import { useRouter } from 'vue-router'
 
@@ -11,7 +11,7 @@ export default {
     const form = {
       pageNum: 3,
       useTLB: 1,
-      TLBNum: 4,
+      tlbNum: 4,
       visitMemory: 100,
       visitTLB: 10,
       handleLosepage: 2000,

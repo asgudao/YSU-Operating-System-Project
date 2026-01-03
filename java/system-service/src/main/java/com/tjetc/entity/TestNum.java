@@ -17,7 +17,7 @@ public class TestNum {
     private Integer id;
     private Integer pageNum;
     private Integer useTLB;
-    private Integer TLBNum;
+    private Integer tlbNum;
     private Integer visitMemory;
     private Integer visitTLB;
     private Integer handleLosepage;

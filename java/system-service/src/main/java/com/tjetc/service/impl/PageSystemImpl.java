@@ -1,7 +1,6 @@
 package com.tjetc.service.impl;
 
 import com.tjetc.common.JsonResult;
-import com.tjetc.dao.TestNumMapper;
 import com.tjetc.entity.Change;
 import com.tjetc.entity.Page;
 import com.tjetc.entity.TestNum;
@@ -61,9 +60,9 @@ public class PageSystemImpl implements PageSystemService {
         FIFO_TableChange=new String[testNum.getPageNum()][input_num.size()];
         LFU_TableChange=new String[testNum.getPageNum()][input_num.size()];
         LRU_TableChange=new String[testNum.getPageNum()][input_num.size()];
-        FIFO_TLBChange=new String[testNum.getTLBNum()][input_num.size()];
-        LFU_TLBChange=new String[testNum.getTLBNum()][input_num.size()];
-        LRU_TLBChange=new String[testNum.getTLBNum()][input_num.size()];
+        FIFO_TLBChange=new String[testNum.getTlbNum()][input_num.size()];
+        LFU_TLBChange=new String[testNum.getTlbNum()][input_num.size()];
+        LRU_TLBChange=new String[testNum.getTlbNum()][input_num.size()];
 
         ExecutorService executor = Executors.newFixedThreadPool(3);
         executor.submit(this::FIFO);
@@ -151,7 +150,7 @@ public class PageSystemImpl implements PageSystemService {
                     FIFO_Time+=testNum.getVisitTLB();
                     if(!FIFO_PageTable.contains(input_num.get(i))){//页表未查询到，产生缺页中断
                         FIFO_Time+=testNum.getVisitMemory();//查询页表时间
-                        if(FIFO_TLB.size()==testNum.getTLBNum()){
+                        if(FIFO_TLB.size()==testNum.getTlbNum()){
                             FIFO_TLB.remove(list_TLB.get(0));//去掉快表中最先进入的那个值
                             list_TLB.remove(0);//去掉最先进入的值
                         }
@@ -215,7 +214,7 @@ public class PageSystemImpl implements PageSystemService {
             for(int i=0;i<input_num.size();i++){
                 if(!LRU_TLB.contains(input_num.get(i))){//tlb未查询到
                     if(!LRU_PageTable.contains(input_num.get(i))){//页表未查询到，产生缺页中断
-                        if (LRU_TLB.size()==testNum.getTLBNum()) {
+                        if (LRU_TLB.size()==testNum.getTlbNum()) {
                             LRU_TLB.remove(list_page.get(0));//去掉快表中最久未使用的那个值
                             list_TLB.remove(0);
                         }
@@ -285,7 +284,7 @@ public class PageSystemImpl implements PageSystemService {
             for(int i=0;i<input_num.size();i++){
                 if(!LFU_TLB.contains(input_num.get(i))){//tlb未查询到
                     if(!LFU_PageTable.contains(input_num.get(i))){//页表未查询到，产生缺页中断
-                        if(LFU_TLB.size()==testNum.getTLBNum()){//快表满了
+                        if(LFU_TLB.size()==testNum.getTlbNum()){//快表满了
                             String delete_num=list_TLB.keySet().iterator().next();
                             LFU_TLB.remove(delete_num);//去掉快表中最久未使用的那个值
                             list_TLB.remove(delete_num);
