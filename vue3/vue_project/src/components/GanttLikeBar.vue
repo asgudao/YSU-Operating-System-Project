@@ -1,8 +1,8 @@
-<script>//时间条展示
+<script>
 export default {
   name: 'GanttLikeBar',
   props: {
-    steps: { // 每步访问信息
+    steps: {
       type: Array,
       required: true
     },
@@ -10,11 +10,14 @@ export default {
   },
   methods: {
     barStyle(time) {
-      const maxTime = Math.max(...this.steps)
-      const height = maxTime ? (time / maxTime) * 200 : 0
+      if (!this.steps || this.steps.length === 0) return {}
+      const maxTime = Math.max(...this.steps.map(s => s.time))
+      // 保证最小高度 2px
+      const height = maxTime ? Math.max((time / maxTime) * 200, 2) : 2
       return {
         height: height + 'px',
-        backgroundColor: '#4caf50'
+        backgroundColor: '#4caf50',
+        minHeight: '2px'
       }
     }
   }
@@ -23,7 +26,7 @@ export default {
 
 <template>
   <div class="gantt-bar">
-    <h4>{{ title }} 访问耗时</h4>
+    <h4>{{ title }}</h4>
     <div class="bar-container">
       <div
           v-for="(step, index) in steps"
@@ -59,5 +62,7 @@ export default {
   color: #fff;
   font-size: 10px;
   border-radius: 3px 3px 0 0;
+  min-height: 2px; /* 防止高度为 0 */
+  background-color: red;
 }
 </style>

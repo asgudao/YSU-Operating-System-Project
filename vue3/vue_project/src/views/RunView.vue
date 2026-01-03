@@ -8,6 +8,11 @@ import { computed, ref, onUnmounted, watch } from 'vue'
 
 export default {
   name: 'RunView',
+  computed: {
+    pagingStore() {
+      return pagingStore
+    }
+  },
   components: { PageFrameView, AddressStep, GanttLikeBar, ConfigView },
   setup() {
     const experiment = ref(null)        // 转换后的实验结果
@@ -20,41 +25,50 @@ export default {
 
     // 计算每步的耗时数组，用于 GanttLikeBar
     function computeStepTimes(step, config, algName) {
+      if (!step || !config || !algName) return []
+
       const algStep = step[algName.toLowerCase() + 'Step'] || []
       const algTLB  = step[algName.toLowerCase() + 'TLB'] || []
       const times = []
 
       for (let i = 0; i < algStep.length; i++) {
-        let time = 0
         const addr = algStep[i]
+        let time = 0
 
-        if (!addr) {
-          time += config.handleLosepage || 0
-          times.push({ time })
+        if (addr == null) {
+          time = config.handleLosepage ?? 2000  // 这里可以设置缺页处理时间默认值
+          times.push({ time, logicAddress: '-' })
           continue
         }
 
         if (config.useTLB) {
           if (algTLB[i] === addr) {
-            time += config.visitTLB || 0
+            time += config.visitTLB ?? 10
           } else {
-            time += (config.visitTLB || 0) + (config.visitMemory || 0)
+            time += (config.visitTLB ?? 10) + (config.visitMemory ?? 100)
           }
         } else {
-          time += config.visitMemory || 0
+          time += config.visitMemory ?? 100
         }
 
-        times.push({ time })
+        times.push({ time, logicAddress: addr })
       }
 
       return times
     }
 
+
+
     // 监听 pagingStore.experiment
+
     watch(
         () => pagingStore.experiment,
         (val) => {
           if (val) {
+            console.log('steps computed:', val)
+            if (val[currentStep.value]) {
+              console.log('currentStep:', currentStep.value, 'step at currentStep:', val[currentStep.value])
+            }
             experiment.value = val   // 已经是转换后的数据
             currentStep.value = 0
           } else {
@@ -66,6 +80,10 @@ export default {
     )
 
     const steps = computed(() => experiment.value?.steps || [])
+
+    watch(() => steps.value, (val) => {
+      console.log('steps.value changed:', val)
+    })
 
     const algorithms = computed(() => {
       if (!experiment.value) return []
@@ -155,6 +173,7 @@ export default {
 
             <!-- 单步访问 -->
             <AddressStep
+                v-if="steps[currentStep]"
                 :step="{
                 logicAddress: steps[currentStep][alg.name.toLowerCase() + 'Step'][0],
                 pageNo: steps[currentStep][alg.name.toLowerCase() + 'Step'][1],
@@ -166,11 +185,12 @@ export default {
               }"
             />
 
-            <!-- 耗时甘特图 -->
             <GanttLikeBar
-                :steps="computeStepTimes(steps[currentStep], config, alg.name)"
+                v-if="steps[currentStep]"
+                :steps="steps[currentStep] ? computeStepTimes(steps[currentStep], config, alg.name) : []"
                 :title="alg.name + ' 访问耗时'"
             />
+
 
             <!-- 控制按钮 -->
             <div class="controls">
