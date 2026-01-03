@@ -9,4 +9,6 @@ public interface PageSystemService {
 
 
     JsonResult start(TestNum testNum);
+
+    JsonResult getChange();
 }

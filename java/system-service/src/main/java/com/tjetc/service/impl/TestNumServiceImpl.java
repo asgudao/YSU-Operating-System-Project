@@ -57,4 +57,18 @@ public class TestNumServiceImpl implements TestNumService {
         List<TestNum> testNumList=testNumMapper.selectAll();
         return JsonResult.success(testNumList);
     }
+
+
+    @Override
+    public JsonResult deleteById(Integer id){
+        if(id == null||id<=0){
+            return JsonResult.fail("id为不得为空或者小于0");
+        }
+        int affectRows = testNumMapper.deleteById(id);
+        if(affectRows > 0){
+            return JsonResult.success("删除数据成功");
+        }else{
+            return JsonResult.fail("删除数据失败");
+        }
+    }
 }

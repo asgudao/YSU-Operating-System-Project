@@ -2,6 +2,7 @@ package com.tjetc.service.impl;
 
 import com.tjetc.common.JsonResult;
 import com.tjetc.dao.TestNumMapper;
+import com.tjetc.entity.Change;
 import com.tjetc.entity.Page;
 import com.tjetc.entity.TestNum;
 import com.tjetc.service.PageService;
@@ -15,10 +16,6 @@ import java.util.*;
 @Service
 @Slf4j
 public class PageSystemImpl implements PageSystemService {
-    @Autowired
-    private PageSystemService pageSystemService;
-    @Autowired
-    private TestNumMapper testNumMapper;
     @Autowired
     private TestNumService testNumService;
     @Autowired
@@ -40,6 +37,7 @@ public class PageSystemImpl implements PageSystemService {
 
     private TestNum testNum = new TestNum();
     private Page page=new Page();
+    private Change change=new Change();
     List<String> input_num=new ArrayList<>();
     private String[][] FIFO_TableChange;
     private String[][] LFU_TableChange;
@@ -49,6 +47,7 @@ public class PageSystemImpl implements PageSystemService {
     private String[][] LFU_TLBChange;
     private String[][] LRU_TLBChange;
 
+    private Integer ifSuccess=0;
 
     //主函数
     @Override
@@ -64,9 +63,24 @@ public class PageSystemImpl implements PageSystemService {
         FIFO();
         LRU();
         LFU();
+        change.setFIFO_TableChange(FIFO_TableChange);
+        change.setLFU_TableChange(LFU_TableChange);
+        change.setLRU_TableChange(LRU_TableChange);
+        change.setFIFO_TLBChange(FIFO_TLBChange);
+        change.setLFU_TLBChange(LFU_TLBChange);
+        change.setLRU_TLBChange(LRU_TLBChange);
         pageService.add(page);
         testNumService.add(testNum);
-        return JsonResult.success("");
+        ifSuccess=1;
+        return JsonResult.success("运行成功",testNum);
+    }
+
+    @Override
+    public JsonResult getChange(){
+        if (ifSuccess==1){
+            return JsonResult.success("运行成功",change);
+        }
+        return JsonResult.fail("运行失败");
     }
 
 

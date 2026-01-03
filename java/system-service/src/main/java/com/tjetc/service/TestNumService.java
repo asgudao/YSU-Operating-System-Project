@@ -35,4 +35,11 @@ public interface TestNumService {
      */
     JsonResult findPage(Integer pageNo, Integer pageSize);
 
+    /**
+     * 根据id删除
+      * @param id
+     * @return
+     */
+    JsonResult deleteById(Integer id);
+
 }

@@ -22,9 +22,9 @@ public class UseController {
     @Autowired
     private PageSystemService pageSystemService;
 
-    @RequestMapping("page/delete/{id}")
+    @RequestMapping("testNum/delete/{id}")
     public JsonResult delete(@PathVariable("id") Integer id){
-        return pageService.deleteById(id);
+        return testNumService.deleteById(id);
     }
 
     @RequestMapping("page/select/all")
@@ -51,6 +51,11 @@ public class UseController {
     @RequestMapping("start")
     public JsonResult start(TestNum testNum){
         return pageSystemService.start(testNum);
+    }
+
+    @RequestMapping("getChange")
+    public JsonResult getChange(){
+        return pageSystemService.getChange();
     }
 }
 
