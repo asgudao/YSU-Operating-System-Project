@@ -25,7 +25,7 @@ export default {
         <span :class="step.pageFault ? 'miss' : 'hit'">{{ step.pageFault ? '缺页' : '无缺页' }}</span>
       </li>
       <li><strong>替换页框：</strong>{{ step.replacedIndex !== undefined && step.replacedIndex !== null ? step.replacedIndex : '-' }}</li>
-      <li><strong>总耗时：</strong>{{ step.time }} ns</li>
+      <li><strong>耗时：</strong>{{ step.time }} ns</li>
     </ul>
   </div>
 </template>

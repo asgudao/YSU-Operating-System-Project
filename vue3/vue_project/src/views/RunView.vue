@@ -6,6 +6,7 @@ import ConfigView from '@/views/ConfigView.vue'
 import { pagingStore } from '@/store/pagingStore.js'
 import { computed, ref, onUnmounted, watch } from 'vue'
 import DebugTable from "@/views/debugtable.vue";
+import GanttGlobalBar from "@/components/GanttGlobalBar.vue";
 
 export default {
   name: 'RunView',
@@ -14,7 +15,7 @@ export default {
       return pagingStore
     }
   },
-  components: {DebugTable, PageFrameView, AddressStep, GanttLikeBar, ConfigView },
+  components: {GanttGlobalBar, DebugTable, PageFrameView, AddressStep, GanttLikeBar, ConfigView },
   setup() {
     const experiment = ref(null)        // 转换后的实验结果
     const currentStep = ref(0)
@@ -162,6 +163,15 @@ export default {
               class="algorithm-card-wrapper"
           >
             <h3>{{ alg.name }}</h3>
+            <!-- 新增逻辑地址展示 -->
+            <PageFrameView
+                v-if="pagingStore.config?.inputNum"
+                :frames="[pagingStore.config.inputNum.split(',').map(v => v.trim())]"
+                :highlight="steps[currentStep]"
+                :title="'逻辑地址序列'"
+            />
+
+
 
             <PageFrameView
                 :frames="alg.frames"
@@ -185,6 +195,11 @@ export default {
                 :steps="steps[currentStep] ? computeStepTimes(steps[currentStep], config, alg.name) : []"
                 :title="alg.name + ' 访问耗时'"
             />
+            <GanttGlobalBar
+                :steps="steps"
+                title="全局访问耗时"
+            />
+
 
 
             <!-- 控制按钮 -->

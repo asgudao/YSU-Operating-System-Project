@@ -19,9 +19,18 @@ export default {
       default: ""
     }
   },
+  computed: {
+    // 判断是二维数组还是一维数组
+    rows() {
+      if (!this.frames || this.frames.length === 0) return []
+      // 如果 frames 的第一项是数组，则认为是二维
+      return Array.isArray(this.frames[0]) ? this.frames : [this.frames]
+    }
+  },
   methods: {
     cellClass(cell, colIndex) {
       const classes = ["cell"]
+      if (!this.highlight) return '' // 如果没有高亮对象就返回空
       // 高亮命中
       if (cell === this.highlight.pageNo && this.highlight.hitTLB) {
         classes.push("hit")
