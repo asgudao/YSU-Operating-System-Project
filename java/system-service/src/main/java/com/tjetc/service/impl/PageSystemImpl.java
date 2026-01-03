@@ -54,6 +54,11 @@ public class PageSystemImpl implements PageSystemService {
         this.testNum = testNum;
         testNumService.add(testNum);
         inputProcess(testNum.getInputNum());//设置testNum的input_num属性
+
+        System.out.println("raw input = " + testNum.getInputNum());
+        System.out.println("parsed input_num = " + input_num);
+        System.out.println("input_num size = " + input_num.size());
+
         FIFO_TableChange=new String[testNum.getPageNum()][input_num.size()];
         LFU_TableChange=new String[testNum.getPageNum()][input_num.size()];
         LRU_TableChange=new String[testNum.getPageNum()][input_num.size()];
@@ -88,9 +93,10 @@ public class PageSystemImpl implements PageSystemService {
         change.setFIFO_TLBChange(FIFO_TLBChange);
         change.setLFU_TLBChange(LFU_TLBChange);
         change.setLRU_TLBChange(LRU_TLBChange);
+        page.setTId(testNum.getId());
         pageService.add(page);
         ifSuccess=1;
-        return JsonResult.success("运行成功",testNum);
+        return JsonResult.success("运行成功",change);
     }
 
 

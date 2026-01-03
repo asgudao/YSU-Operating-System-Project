@@ -3,6 +3,7 @@
 import { startPaging } from '@/apis/paging.js'
 import { pagingStore } from '@/store/pagingStore.js'
 import { useRouter } from 'vue-router'
+import { transformChangeToSteps } from '@/utils/transformPaging.js'
 
 export default {
   setup() {
@@ -11,7 +12,7 @@ export default {
     const form = {
       pageNum: 3,
       useTLB: 1,
-      tlbNum: 4,
+      TLBNum: 4,
       visitMemory: 100,
       visitTLB: 10,
       handleLosepage: 2000,
@@ -21,31 +22,36 @@ export default {
     const startExperiment = async () => {
       try {
         const res = await startPaging(form)
-        if (res && res.code === 200) {
+        if (res && res.data?.state === 0) {
           alert('实验启动成功！')
-          pagingStore.setExperiment(res.data)   // 保存实验结果
-          router.push('/run')                   // 跳转到运行页
+
+          const rawData = res.data.data
+
+          // 转换为前端动画步骤并保存到 pagingStore
+          pagingStore.setExperiment({
+            FIFO: { frames: rawData.fifo_TableChange, tlb: rawData.fifo_TLBChange },
+            LRU: { frames: rawData.lru_TableChange, tlb: rawData.lru_TLBChange },
+            LFU: { frames: rawData.lfu_TableChange, tlb: rawData.lfu_TLBChange },
+            steps: transformChangeToSteps(rawData).steps
+          })
+
+          router.push('/run')  // 跳转到运行页
         } else {
-          // 如果后端返回了错误信息
-          const msg = res?.msg || JSON.stringify(res)
+          const msg = res?.data?.message || JSON.stringify(res)
           alert('启动失败: ' + msg)
           console.error('启动失败响应:', res)
         }
       } catch (error) {
-        // Axios 错误处理增强
         if (error.response) {
-          // 后端返回了非 2xx 状态码
           console.error('后端响应错误:', error.response)
           alert(
               `接口调用失败！状态码: ${error.response.status}\n` +
               `响应数据: ${JSON.stringify(error.response.data)}`
           )
         } else if (error.request) {
-          // 请求发出去了，但没有收到响应
           console.error('请求未收到响应:', error.request)
           alert('请求未收到响应，请检查后端是否启动以及 CORS 配置')
         } else {
-          // 其他错误
           console.error('请求设置错误:', error.message)
           alert('请求错误: ' + error.message)
         }

@@ -40,7 +40,6 @@ export default {
     const prevStep = () => {
       if (currentStep.value > 0) currentStep.value--
     }
-
     // 清理定时器
     onUnmounted(() => {
       if (timer) clearInterval(timer)
