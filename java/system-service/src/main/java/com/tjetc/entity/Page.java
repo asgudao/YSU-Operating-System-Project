@@ -19,11 +19,9 @@ public class Page {
     private Integer FIFOLosepage;
     private Integer LRULosepage;
     private Integer LFULosepage;
-    private Integer OPTLosepage;
     private Integer FIFOTime;
     private Integer LRUTime;
     private Integer LFUTime;
-    private Integer OPTTime;
 
 
 }

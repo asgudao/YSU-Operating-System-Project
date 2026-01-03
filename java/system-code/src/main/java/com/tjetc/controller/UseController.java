@@ -7,10 +7,13 @@ import com.tjetc.entity.TestNum;
 import com.tjetc.service.PageService;
 import com.tjetc.service.PageSystemService;
 import com.tjetc.service.TestNumService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequestMapping("use")
+@Slf4j
 public class UseController {
     @Autowired
     private PageService pageService;

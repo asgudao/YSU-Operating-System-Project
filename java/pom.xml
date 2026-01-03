@@ -16,7 +16,6 @@
         <!--子模块-->
         <module>system-code</module>
         <module>system-service</module>
-        <module>PagingSystem</module>
     </modules>
 
     <!--    导入springboot版本和框架依赖  单继承    -->

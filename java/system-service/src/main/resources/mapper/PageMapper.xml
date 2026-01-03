@@ -12,8 +12,6 @@
         LRU_losepage,
         LFU_time,
         LFU_losepage,
-        OPT_time,
-        OPT_losepage
     </sql>
     <resultMap id="baseMap" type="page">
         <id column="id" property="id"></id>
@@ -24,8 +22,6 @@
         <result column="LRU_losepage" property="LRULosepage"></result>
         <result column="LFU_time" property="LFUTime"></result>
         <result column="LFU_losepage" property="LFULosepage"></result>
-        <result column="OPT_time" property="OPTTime"></result>
-        <result column="OPT_losepage" property="OPTLosepage"></result>
     </resultMap>
     <select id="selectAll" resultMap="baseMap">
         select <include refid="columnName"></include>
