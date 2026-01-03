@@ -7,6 +7,7 @@ import com.tjetc.entity.Page;
 import com.tjetc.service.PageService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,12 +28,8 @@ public class PageServiceImpl implements PageService {
     @Override
     @Transactional
     public JsonResult add(Page page){
-        try {
-            pageMapper.insert(page);
-            return JsonResult.success("新增数据成功");
-        }catch (Exception e){
-            throw new RuntimeException("e");
-        }
+        pageMapper.insert(page);
+        return JsonResult.success("新增数据成功");
     }
 
     @Override

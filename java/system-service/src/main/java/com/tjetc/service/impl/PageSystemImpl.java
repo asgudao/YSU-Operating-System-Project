@@ -11,10 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 @Service
 @Slf4j
@@ -65,16 +62,24 @@ public class PageSystemImpl implements PageSystemService {
         LRU_TLBChange=new String[testNum.getTLBNum()][input_num.size()];
 
         ExecutorService executor = Executors.newFixedThreadPool(3);
-        Future<?> f1 = executor.submit(this::FIFO);
-        Future<?> f2 = executor.submit(this::LRU);
-        Future<?> f3 = executor.submit(this::LFU);
-        executor.shutdown();
+
         try {
-            f1.get();   // 阻塞直到 FIFO 算完
-            f2.get();
-            f3.get();
-        } catch (Exception e) {
-            return JsonResult.fail("算法线程异常：" + e.getMessage());
+            CompletableFuture<Void> f1 =
+                    CompletableFuture.runAsync(this::FIFO, executor);
+            CompletableFuture<Void> f2 =
+                    CompletableFuture.runAsync(this::LRU, executor);
+            CompletableFuture<Void> f3 =
+                    CompletableFuture.runAsync(this::LFU, executor);
+
+            // 等三个算法全部跑完（有异常会直接抛）
+            CompletableFuture.allOf(f1, f2, f3).join();
+
+        } catch (CompletionException e) {
+            Throwable cause = e.getCause();
+            return JsonResult.fail("算法线程异常：" +
+                    (cause != null ? cause.getMessage() : e.getMessage()));
+        } finally {
+            executor.shutdown();
         }
 
         change.setFIFO_TableChange(FIFO_TableChange);
@@ -109,15 +114,15 @@ public class PageSystemImpl implements PageSystemService {
     }
 
     //用于给tablechange赋值
-    public JsonResult record(String[][] TableChange,List<String> list,Integer i){
-        for(int j = 0;j<input_num.size();j++){//行
-            TableChange[i][j]=list.get(j);
+    public synchronized void record(String[][] TableChange,List<String> list,Integer i){
+        for(int j = 0;j< list.size();j++){//行
+            TableChange[j][i]=list.get(j);
         }
-        return JsonResult.success("success");
     }
 
     public JsonResult FIFO(){
         List <String>list_page = new ArrayList<>();
+        System.out.println("123");
         List<String>list_TLB = new ArrayList<>();
         if(testNum.getUseTLB()==0){//没有快表
             for(int i=0;i<input_num.size();i++){
@@ -132,6 +137,7 @@ public class PageSystemImpl implements PageSystemService {
                     FIFO_Time += testNum.getHandleLosepage();//加处理缺页中断情况的时间
                     FIFO_Losepage++;//加出现缺页中断情况的次数
                     i--;//让下次接着查询此值
+                    continue;
                 }
                 else{
                     FIFO_Time+=testNum.getVisitMemory();//正常查询页表
@@ -161,6 +167,7 @@ public class PageSystemImpl implements PageSystemService {
                         FIFO_Time += testNum.getHandleLosepage();//加处理缺页中断的情况
                         FIFO_Losepage++;//加出现缺页中断情况的次数
                         i--;//让下次接着查询
+                        continue;
                     }
                     else{//页表查询到
                         FIFO_Time+=testNum.getVisitMemory();
@@ -197,6 +204,7 @@ public class PageSystemImpl implements PageSystemService {
                     LRU_Time += testNum.getHandleLosepage();//加处理缺页中断的情况
                     LRU_Losepage++;//加出现缺页中断情况的次数
                     i--;//让下次接着查询此值
+                    continue;
                 }
                 else{
                     list_page.remove(input_num.get(i));
@@ -226,6 +234,7 @@ public class PageSystemImpl implements PageSystemService {
                         LRU_Time += testNum.getHandleLosepage();//加处理缺页中断的情况
                         LRU_Losepage++;//加出现缺页中断情况的次数
                         i--;//让下次接着查询
+                        continue;
                     }
                     else{
                         list_page.remove(input_num.get(i));
@@ -268,6 +277,7 @@ public class PageSystemImpl implements PageSystemService {
                     LFU_Time += testNum.getHandleLosepage();//加处理缺页中断的情况
                     LFU_Losepage++;//加出现缺页中断情况的次数
                     i--;//让下次接着查询此值
+                    continue;
                 }
                 else{
                     list_page.merge(input_num.get(i),1,Integer::sum);
@@ -297,6 +307,7 @@ public class PageSystemImpl implements PageSystemService {
                         LFU_Time += testNum.getHandleLosepage();//加处理缺页中断的情况
                         LFU_Losepage++;//加出现缺页中断情况的次数
                         i--;//让下次接着查询
+                        continue;
                     }
                     else{
                         list_page.merge(input_num.get(i),1,Integer::sum);
