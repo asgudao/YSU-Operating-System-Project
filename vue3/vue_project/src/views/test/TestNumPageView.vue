@@ -2,7 +2,9 @@
 import {ref,onMounted} from 'vue'
 import {useRouter} from 'vue-router'
 import { ElMessage } from 'element-plus'
-import {testPage,testDeleteById} from '@/apis/test'
+import {testPage,testNumDeleteById,testPaging} from '@/apis/paging'
+
+
 
 const username = ref('')
 const pageNo=ref(1)
@@ -42,10 +44,6 @@ onMounted(()=>{
     searchTestPage(pageNo.value,pageSize.value)
 })
 
-const handleSearch=()=>{
-    searchTestPage(pageNo.value,pageSize.value)
-}
-
 //每页数量发生改变回调函数
 const handleSizeChange=(value)=>{
     console.log(`pageSize=${value}`)
@@ -64,20 +62,20 @@ const handleCurrentChange=(value)=>{
 const handleConfirmDelete= async (id)=>{
     console.log(`id=${id}`)
     //请求后端api做删除操作
-    await testDeleteById({id})
+    await testNumDeleteById({id})
     ElMessage.success("删除测试成功")
     //要重新查询
     searchTestPage(pageNo.value,pageSize.value)
 }
 
-const handleConfirmReplay= async (id)=>{
-    console.log(`id=${id}`)
-    //请求后端api做删除操作
-    await testDeleteById({id})
-    ElMessage.success("重演测试成功")
-    //要重新查询
-    searchTestPage(pageNo.value,pageSize.value)
-}
+// const handleConfirmReplay= async (id)=>{
+//     console.log(`id=${id}`)
+//     //请求后端api做删除操作
+//     await testNumDeleteById({id})
+//     ElMessage.success("重演测试成功")
+//     //要重新查询
+//     searchTestPage(pageNo.value,pageSize.value)
+// }
 </script>
 
 <template>
@@ -89,14 +87,14 @@ const handleConfirmReplay= async (id)=>{
             :row-class-name="tableRowClassName"
         >
             <el-table-column fixed="left" prop="id" label="编号" width="120" />
-            <el-table-column prop="pageNum" label="页数" width="180" />
-            <el-table-column prop="useTLB" label="是否使用快表" width="400" />
-            <el-table-column prop="TLBNum" label="快表数据数" width="180" />
-            <el-table-column prop="visitMemory" label="访问内存时间" width="180" />
-            <el-table-column prop="visitTLB" label="访问快表时间" width="180" />
-            <el-table-column prop="handleLosePage" label="处理缺页时间" width="180" />
+            <el-table-column prop="pageNum" label="页数" width="120" />
+            <el-table-column prop="useTLB" label="是否使用快表" width="120" />
+            <el-table-column prop="TLBNum" label="快表数据数" width="120" />
+            <el-table-column prop="visitMemory" label="访问内存时间" width="120" />
+            <el-table-column prop="visitTLB" label="访问快表时间" width="120" />
+            <el-table-column prop="handleLosePage" label="处理缺页时间" width="120" />
             <el-table-column prop="inputNum" label="输入内容" width="180" />
-            <el-table-column prop="createTime" label="创建时间" width="180" />
+            <el-table-column prop="createTime" label="创建时间" width="120" />
             <el-table-column fixed="right" label="Operations" width="120">
                 <template #default="scope">
                     <el-popconfirm
@@ -111,7 +109,7 @@ const handleConfirmReplay= async (id)=>{
                             <el-button link type="primary" size="small">删除</el-button>
                         </template>
                     </el-popconfirm>
-                                        <el-popconfirm
+                                        <!-- <el-popconfirm
                         confirm-button-text="确定"
                         cancel-button-text="取消"
                         icon="WarningFilled"
@@ -122,7 +120,7 @@ const handleConfirmReplay= async (id)=>{
                         <template #reference>
                             <el-button link type="primary" size="small">重演</el-button>
                         </template>
-                    </el-popconfirm>
+                    </el-popconfirm> -->
                 </template>
             </el-table-column>
         </el-table>

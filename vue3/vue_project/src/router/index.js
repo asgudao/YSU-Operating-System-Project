@@ -3,7 +3,6 @@ import { createRouter, createWebHistory } from 'vue-router'
 // 导入页面组件
 import ConfigView from '@/views/ConfigView.vue'
 import RunView from '@/views/RunView.vue'
-import HistoryView from '@/views/HistoryView.vue'
 
 const routes = [
   {
@@ -13,21 +12,17 @@ const routes = [
   {
     path: '/config',
     name: 'Config',
-    component:()=>import('@/views/ConfigView.vue')
+    component: () => import('@/views/ConfigView.vue')
   },
   {
     path: '/run',
     name: 'Run',
-    component:()=>import('@/views/RunView.vue')
+    component: () => import('@/views/RunView.vue')
   },
   {
-    path: '/history',
-    name: 'History',
-    component:()=>import('@/views/HistoryView.vue')
-  },{
     path: '/testnum',
     name: 'TestNum',
-    component:()=>import('@/views/test/TestNumPageView.vue')
+    component: () => import('@/views/test/TestNumPageView.vue')
   }
 ]
 

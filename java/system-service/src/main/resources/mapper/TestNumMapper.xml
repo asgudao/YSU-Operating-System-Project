@@ -5,7 +5,6 @@
 <mapper namespace="com.tjetc.dao.TestNumMapper">
     <sql id="columnName">
         id,
-        p_id,
         page_num,
         use_TLB,
         visit_memory,
@@ -29,6 +28,10 @@
         select <include refid="columnName"></include>
         from test_num
         where id=#{id}
+    </select>
+    <select id="selectAll" resultMap="baseMap">
+        select <include refid="columnName"></include>
+        from test_num
     </select>
 
 </mapper>

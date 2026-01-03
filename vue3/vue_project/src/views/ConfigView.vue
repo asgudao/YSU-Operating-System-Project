@@ -57,7 +57,12 @@ export default {
       }
     }
 
-    return { form, startExperiment }
+    // 跳转到历史测试查询页面
+    const gotoHistory = () => {
+      router.push('/testnum')
+    }
+
+    return { form, startExperiment, gotoHistory }
   }
 }
 
@@ -108,6 +113,7 @@ export default {
       </div>
 
       <button type="submit">开始实验</button>
+      <button type="button" @click="gotoHistory">历史测试查询</button>
 
     </form>
   </div>
@@ -119,5 +125,25 @@ export default {
 }
 .config-view form div {
   margin-bottom: 10px;
+}
+.config-view form button {
+  margin-right: 10px;
+  padding: 8px 16px;
+  background-color: #409eff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s;
+}
+.config-view form button:hover {
+  background-color: #66b1ff;
+}
+.config-view form button[type="button"] {
+  background-color: #909399;
+}
+.config-view form button[type="button"]:hover {
+  background-color: #a6a9ad;
 }
 </style>
