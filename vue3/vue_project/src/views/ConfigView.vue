@@ -1,5 +1,5 @@
 <script>//参数配置页
-import { startPaging } from '@/api/paging.js'
+import { startPaging } from '@/apis/paging.js'
 import { pagingStore } from '@/store/pagingStore.js'
 import { useRouter } from 'vue-router'
 

@@ -1,5 +1,5 @@
 <script>//实验记录页
-import { getAllPages, getTestNum, deletePage } from '@/api/paging.js'
+import { getAllPages, getTestNum, deletePage } from '@/apis/paging.js'
 import { pagingStore } from '@/store/pagingStore.js'
 import { useRouter } from 'vue-router'
 import { ref, onMounted } from 'vue'

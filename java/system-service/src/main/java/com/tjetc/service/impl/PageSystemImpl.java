@@ -12,6 +12,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @Slf4j
@@ -60,9 +63,24 @@ public class PageSystemImpl implements PageSystemService {
         FIFO_TLBChange=new String[testNum.getTLBNum()][input_num.size()];
         LFU_TLBChange=new String[testNum.getTLBNum()][input_num.size()];
         LRU_TLBChange=new String[testNum.getTLBNum()][input_num.size()];
-        FIFO();
-        LRU();
-        LFU();
+
+        ExecutorService executor = Executors.newFixedThreadPool(3);
+        executor.submit(this::FIFO);
+        executor.submit(this::LRU);
+        executor.submit(this::LFU);
+        executor.shutdown();
+        try {
+            // 等待10分钟（可根据业务调整超时时间），超时则强制关闭
+            if (!executor.awaitTermination(10, TimeUnit.MINUTES)) {
+                executor.shutdownNow(); // 强制关闭
+                return JsonResult.fail("线程执行超时，运行失败");
+            }
+        } catch (InterruptedException e) {
+            executor.shutdownNow(); // 中断时强制关闭
+            e.printStackTrace();
+            return JsonResult.fail("线程执行中断，运行失败");
+        }
+
         change.setFIFO_TableChange(FIFO_TableChange);
         change.setLFU_TableChange(LFU_TableChange);
         change.setLRU_TableChange(LRU_TableChange);

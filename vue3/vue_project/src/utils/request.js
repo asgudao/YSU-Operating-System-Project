@@ -45,21 +45,4 @@ const service = axios.create({
         }
     }
 })
-
-// 配置axios的请求拦截器，作用是让所有axios请求携带token，后台需要token校验是否登录
-service.interceptors.request.use(
-    config => {
-        // 1.从store中获取到token,这里的token时登录时你给用户设置token的键值
-        config.headers['token'] = useAdminStore().getToken
-        // 2.放行
-        return config
-    },
-    error => {
-        console.log('err:' + error) // for debug
-        ElMessage.error(error.message)
-        //此时的promise链停下来了
-        return new Promise(() => {
-        })
-    }
-)
 export default service

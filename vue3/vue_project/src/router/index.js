@@ -13,17 +13,21 @@ const routes = [
   {
     path: '/config',
     name: 'Config',
-    component: ConfigView
+    component:()=>import('@/views/ConfigView.vue')
   },
   {
     path: '/run',
     name: 'Run',
-    component: RunView
+    component:()=>import('@/views/RunView.vue')
   },
   {
     path: '/history',
     name: 'History',
-    component: HistoryView
+    component:()=>import('@/views/HistoryView.vue')
+  },{
+    path: '/testnum',
+    name: 'TestNum',
+    component:()=>import('@/views/test/TestNumPageView.vue')
   }
 ]
 
