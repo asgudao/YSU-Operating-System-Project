@@ -57,5 +57,10 @@ public class UseController {
     public JsonResult getChange(){
         return pageSystemService.getChange();
     }
+
+    @RequestMapping("test")
+    public JsonResult test(@RequestBody TestNum testNum){
+        return pageSystemService.start(testNum);
+    }
 }
 

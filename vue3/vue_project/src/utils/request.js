@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import qs from 'qs'
-import { useAdminStore } from '@/stores/admin'
+
 
 //axios.create({})
 // axios创建实例对象(axios对象)
