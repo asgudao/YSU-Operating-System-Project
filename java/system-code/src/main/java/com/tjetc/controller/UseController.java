@@ -49,7 +49,7 @@ public class UseController {
     }
 
     @RequestMapping("start")
-    public JsonResult start(TestNum testNum){
+    public JsonResult start(@RequestBody TestNum testNum){
         return pageSystemService.start(testNum);
     }
 

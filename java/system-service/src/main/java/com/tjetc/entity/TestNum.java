@@ -2,6 +2,7 @@ package com.tjetc.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,7 +18,10 @@ public class TestNum {
     private Integer id;
     private Integer pageNum;
     private Integer useTLB;
+
+    @JsonProperty("TLBNum")
     private Integer TLBNum;
+
     private Integer visitMemory;
     private Integer visitTLB;
     private Integer handleLosepage;
