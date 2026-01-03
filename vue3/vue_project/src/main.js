@@ -16,6 +16,7 @@ import 'element-plus/dist/index.css'
 //导入element-plus/icon图标组件
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 
+
 //返回vue对象
 const app = createApp(App)
 //创建pinia对象
@@ -28,6 +29,7 @@ app.use(pinia)
 app.use(router)
 //使用ElementPlus组件
 app.use(ElementPlus)
+app.use(createPinia())
 //遍历ElementPlusIconsVue对象所有属性（icon图标组件），注册成全局组件，页面直接可以使用，不用再单独import了
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
     app.component(key, component)
